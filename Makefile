@@ -30,6 +30,10 @@ show: ## Detail for one project — make show PROJECT=can-secoc-demo
 validate: ## Every repository consistency rule
 	@$(LABCTL) validate
 
+.PHONY: standards
+standards: ## The standards register, and what needs re-checking
+	@$(LABCTL) standards
+
 .PHONY: render
 render: ## Regenerate the documentation blocks from lab.toml
 	@$(LABCTL) render
@@ -47,10 +51,14 @@ lint: ## Lint and format-check the tooling
 	@cd $(LABCTL_DIR) && $(PYTHON) -m ruff check labctl tests
 	@cd $(LABCTL_DIR) && $(PYTHON) -m ruff format --check labctl tests
 
+# Keep this list in step with .github/workflows/ci.yml. A `check` that is
+# missing something CI runs is worse than no `check` at all — it reports green
+# on a tree CI will reject.
 .PHONY: check
 check: validate ## Everything CI runs
 	@$(LABCTL) render --check
 	@$(PYTHON) tools/assets/render_assets.py --check
+	@$(MAKE) --no-print-directory lint
 	@$(MAKE) --no-print-directory test
 	@printf '\n  \033[32mall checks passed\033[0m\n\n'
 

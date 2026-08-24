@@ -63,6 +63,12 @@ Secure boot · chain of trust · HSM and root of trust · anti-rollback · measu
 
 Full matrix: [capability coverage](../../docs/skills-coverage.md).
 
+## Standards
+
+Implements: **SAE J3101 · NIST SP 800-193 · NIST SP 800-208 · NSA CNSA 2.0 · FIPS 204 · UN ECE R156 · ISO 24089**.
+
+Editions are pinned and dated in the [standards register](../../docs/standards-register.md). Several anchors have moved since this specification was written — read [`CORRECTIONS.md`](./CORRECTIONS.md) before writing code.
+
 ## Claim discipline
 
 Say: *"I designed and implemented a simulated secure boot chain in Python: a signed image container format, staged signature verification, monotonic anti-rollback counters, key revocation, measured boot with a PCR model, and a hash-chained audit log."*

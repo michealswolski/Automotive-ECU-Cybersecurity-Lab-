@@ -14,6 +14,15 @@ from pathlib import Path
 
 VALID_STATUSES = ("specified", "building", "built")
 
+#: How a standards-register row should be treated when a project cites it.
+VALID_STANDARD_STATUSES = ("current", "imminent", "draft", "superseded")
+
+#: How a register row was last checked. ``web`` means a source was consulted on
+#: the ``verified`` date; ``report`` means it came from the 2026 spec-validation
+#: report and has not been independently rechecked. Recording the difference is
+#: the point — a register that cannot say how it knows is decoration.
+VALID_STANDARD_SOURCES = ("web", "report")
+
 #: Files a project directory must contain to count as a complete build kit.
 REQUIRED_PROJECT_FILES = (
     "README.md",
@@ -21,6 +30,7 @@ REQUIRED_PROJECT_FILES = (
     "BUILD_PLAN.md",
     "ACCEPTANCE.md",
     "CLAUDE.md",
+    "CORRECTIONS.md",
     "prompts/kickoff.md",
     "docs/interview-talking-points.md",
 )
@@ -46,6 +56,36 @@ class Skill:
 
 
 @dataclass(frozen=True)
+class Standard:
+    """One row of the standards register.
+
+    The register exists because the fastest way to lose credibility in a
+    security portfolio is to cite an edition that has moved. Each row pins the
+    edition to cite, when it was last checked, and against what.
+    """
+
+    id: str
+    name: str
+    title: str
+    edition: str
+    status: str
+    group: str
+    verified: str
+    source: str
+    note: str = ""
+
+    @property
+    def citable(self) -> bool:
+        """Whether a project may cite this row as its anchor."""
+        return self.status != "superseded"
+
+    @property
+    def moving(self) -> bool:
+        """Under active revision — re-check before quoting."""
+        return self.status in ("imminent", "draft")
+
+
+@dataclass(frozen=True)
 class Project:
     id: str
     number: int
@@ -57,6 +97,7 @@ class Project:
     summary: str
     centerpiece: str
     covers: tuple[str, ...] = ()
+    standards: tuple[str, ...] = ()
     consumes: tuple[str, ...] = ()
     provides: tuple[str, ...] = ()
 
@@ -79,6 +120,7 @@ class Lab:
     tagline: str
     projects: tuple[Project, ...] = ()
     skills: tuple[Skill, ...] = ()
+    standards: tuple[Standard, ...] = ()
     root: Path = field(default=Path("."), compare=False)
 
     @property
@@ -106,6 +148,23 @@ class Lab:
             if skill.id == skill_id:
                 return skill
         raise KeyError(skill_id)
+
+    def standard(self, standard_id: str) -> Standard:
+        for standard in self.standards:
+            if standard.id == standard_id:
+                return standard
+        raise KeyError(standard_id)
+
+    def standard_groups(self) -> dict[str, list[Standard]]:
+        """Register rows bucketed by group, preserving manifest order."""
+        groups: dict[str, list[Standard]] = {}
+        for standard in self.standards:
+            groups.setdefault(standard.group, []).append(standard)
+        return groups
+
+    def citing(self, standard_id: str) -> list[Project]:
+        """Projects that cite a given standard, in display order."""
+        return [p for p in self.by_number() if standard_id in p.standards]
 
     def skill_groups(self) -> dict[str, list[Skill]]:
         """Skills bucketed by group, preserving manifest order within a group."""
@@ -172,6 +231,7 @@ def load(root: Path | str = ".") -> Lab:
                 summary=_clean(str(_require(entry, "summary", where))),
                 centerpiece=_clean(str(_require(entry, "centerpiece", where))),
                 covers=tuple(entry.get("covers", ())),
+                standards=tuple(entry.get("standards", ())),
                 consumes=tuple(entry.get("consumes", ())),
                 provides=tuple(entry.get("provides", ())),
             )
@@ -189,10 +249,38 @@ def load(root: Path | str = ".") -> Lab:
             )
         )
 
+    standards: list[Standard] = []
+    for index, entry in enumerate(raw.get("standard", [])):
+        where = f"lab.toml [[standard]] #{index + 1}"
+        status = str(_require(entry, "status", where))
+        if status not in VALID_STANDARD_STATUSES:
+            raise ManifestError(
+                f"{where}: status {status!r} is not one of {', '.join(VALID_STANDARD_STATUSES)}"
+            )
+        provenance = str(_require(entry, "source", where))
+        if provenance not in VALID_STANDARD_SOURCES:
+            raise ManifestError(
+                f"{where}: source {provenance!r} is not one of {', '.join(VALID_STANDARD_SOURCES)}"
+            )
+        standards.append(
+            Standard(
+                id=str(_require(entry, "id", where)),
+                name=str(_require(entry, "name", where)),
+                title=str(_require(entry, "title", where)),
+                edition=str(_require(entry, "edition", where)),
+                status=status,
+                group=str(_require(entry, "group", where)),
+                verified=str(_require(entry, "verified", where)),
+                source=provenance,
+                note=_clean(str(entry.get("note", ""))),
+            )
+        )
+
     _reject_duplicates([p.id for p in projects], "project id")
     _reject_duplicates([p.number for p in projects], "project number")
     _reject_duplicates([p.order for p in projects], "project order")
     _reject_duplicates([s.id for s in skills], "skill id")
+    _reject_duplicates([s.id for s in standards], "standard id")
 
     return Lab(
         name=str(_require(lab_table, "name", "lab.toml [lab]")),
@@ -201,6 +289,7 @@ def load(root: Path | str = ".") -> Lab:
         tagline=str(_require(lab_table, "tagline", "lab.toml [lab]")),
         projects=tuple(projects),
         skills=tuple(skills),
+        standards=tuple(standards),
         root=root,
     )
 

@@ -22,6 +22,8 @@ That runs every consistency rule, verifies the generated documentation blocks ar
 
 **Do not add a capability claim without a project that backs it.** Every id in a project's `covers` list must resolve to a declared `[[skill]]`, every declared skill must be covered by some project, and no project may claim a skill marked `bench_only`. `labctl validate` enforces all three. See [tooling](./docs/tooling.md).
 
+**Cite the edition in the register, and keep the register honest.** Every project names the documents it implements in `lab.toml`, and `labctl validate` rejects a citation that is not declared or is marked superseded. If you find a row that has moved, update `edition`, `status`, `verified` and `source` together — a new edition with a stale `verified` date is worse than no register at all. See [standards register](./docs/standards-register.md).
+
 **Do not fabricate a clause number, a table, or a threshold.** ISO/SAE 21434 and MISRA C are paid standards; this repository reproduces neither. Cite by document name where a clause cannot be verified, and mark any threshold you chose yourself as a project convention.
 
 **No hand-rolled cryptography.** Use `cryptography` (pyca) primitives throughout. The projects are about how cryptography is deployed, not about reimplementing AES.
@@ -30,7 +32,7 @@ That runs every consistency rule, verifies the generated documentation blocks ar
 
 ## Adding a project
 
-1. Create `projects/<id>/` with all seven required files — `README.md`, `SPEC.md`, `BUILD_PLAN.md`, `ACCEPTANCE.md`, `CLAUDE.md`, `prompts/kickoff.md`, `docs/interview-talking-points.md`.
+1. Create `projects/<id>/` with all eight required files — `README.md`, `SPEC.md`, `BUILD_PLAN.md`, `ACCEPTANCE.md`, `CLAUDE.md`, `CORRECTIONS.md`, `prompts/kickoff.md`, `docs/interview-talking-points.md`.
 2. Add a `[[project]]` entry to `lab.toml` with a unique `id`, `number` and `order`.
 3. `make render`, then `make check`.
 

@@ -66,6 +66,12 @@ CAN bus · AUTOSAR SecOC · AES · CMAC/HMAC · replay protection · freshness m
 
 Full matrix: [capability coverage](../../docs/skills-coverage.md).
 
+## Standards
+
+Implements: **AUTOSAR SecOC · RFC 4493 · NIST SP 800-38B · ISO 11898-1**.
+
+Editions are pinned and dated in the [standards register](../../docs/standards-register.md). Several anchors have moved since this specification was written — read [`CORRECTIONS.md`](./CORRECTIONS.md) before writing code.
+
 ## Claim discipline
 
 Say: *"I implemented the AUTOSAR SecOC profiles over virtual CAN in Python: AES-128 CMAC authenticator, truncated MAC and freshness value, receiver-side freshness reconstruction with an acceptance window, freshness resynchronisation, and a replay/forgery attacker for validation. I verified the CMAC against the RFC 4493 test vectors."*

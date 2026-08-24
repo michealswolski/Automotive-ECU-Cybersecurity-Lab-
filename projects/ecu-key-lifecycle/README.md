@@ -59,6 +59,12 @@ Key management · key derivation (HKDF) · provisioning ceremony · key rotation
 
 Full matrix: [capability coverage](../../docs/skills-coverage.md).
 
+## Standards
+
+Implements: **NIST SP 800-57 Part 1 · NIST SP 800-130 · RFC 9162 · UN ECE R156 · ISO 24089**.
+
+Editions are pinned and dated in the [standards register](../../docs/standards-register.md). Several anchors have moved since this specification was written — read [`CORRECTIONS.md`](./CORRECTIONS.md) before writing code.
+
 ## Claim discipline
 
 Say: *"I designed and implemented a simulated ECU key lifecycle manager covering generation, derivation, a challenge-response provisioning ceremony, protected storage, fleet rotation with an overlap window, signed revocation lists with rollback protection, cryptoperiod enforcement, and a hash-chained tamper-evident audit log. I based the lifecycle model and cryptoperiod defaults on published NIST key management guidance."*

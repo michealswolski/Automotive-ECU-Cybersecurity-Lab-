@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 from .inspect import ProjectState, inspect_all
-from .manifest import Lab
+from .manifest import Lab, Standard
 
 #: Inline Markdown links, excluding image embeds (which start with `!`).
 _LINK_RE = re.compile(r"(?<!\!)\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
@@ -134,6 +135,104 @@ def check_skills(lab: Lab) -> list[Finding]:
     return findings
 
 
+#: A verified date older than this many days is worth re-checking. Standards
+#: move: an edition that was current when it was written is not automatically
+#: current when someone reads the README a year later.
+STALE_AFTER_DAYS = 365
+
+
+def check_standards(lab: Lab) -> list[Finding]:
+    """Standard ids resolve, nothing is orphaned, and no project cites a
+    superseded edition.
+
+    This is the rule that turns "cite the current edition" from an intention
+    into a property of the build.
+    """
+    findings: list[Finding] = []
+    known = {standard.id for standard in lab.standards}
+
+    for project in lab.by_number():
+        for standard_id in project.standards:
+            if standard_id not in known:
+                findings.append(
+                    Finding(
+                        "standard-ref",
+                        f"{project.id}: cites unknown standard {standard_id!r}",
+                    )
+                )
+                continue
+            standard = lab.standard(standard_id)
+            if not standard.citable:
+                findings.append(
+                    Finding(
+                        "superseded-standard",
+                        f"{project.id}: cites {standard.name} ({standard.edition}), which is "
+                        f"marked superseded — update the register and the project",
+                    )
+                )
+
+    for standard in lab.standards:
+        if not lab.citing(standard.id):
+            findings.append(
+                Finding(
+                    "orphan-standard",
+                    f"standard {standard.id!r} is cited by no project — either cite it "
+                    f"or drop it from the register",
+                )
+            )
+        if not _is_iso_date(standard.verified):
+            findings.append(
+                Finding(
+                    "standard-verified",
+                    f"standard {standard.id!r}: verified {standard.verified!r} is not an "
+                    f"ISO date (YYYY-MM-DD)",
+                )
+            )
+
+    for project in lab.by_number():
+        if not project.standards:
+            findings.append(
+                Finding(
+                    "no-standard",
+                    f"{project.id}: cites no standard. Every project should name the "
+                    f"document it implements — that traceability is the credibility",
+                )
+            )
+    return findings
+
+
+def _is_iso_date(value: str) -> bool:
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
+def stale_standards(lab: Lab, today: date | None = None) -> list[Standard]:
+    """Register rows worth re-checking: under active revision, or last verified
+    more than a year ago.
+
+    Deliberately *not* a validation finding. A standard going a year without a
+    re-check is a prompt, not a defect, and failing the build on the passage of
+    time would train people to ignore the build.
+    """
+    today = today or date.today()
+    out: list[Standard] = []
+    for standard in lab.standards:
+        if standard.moving:
+            out.append(standard)
+            continue
+        try:
+            checked = date.fromisoformat(standard.verified)
+        except ValueError:
+            out.append(standard)
+            continue
+        if (today - checked).days > STALE_AFTER_DAYS:
+            out.append(standard)
+    return out
+
+
 def check_bridges(lab: Lab) -> list[Finding]:
     """Every `consumes` entry is produced by some project's `provides`."""
     findings: list[Finding] = []
@@ -189,6 +288,7 @@ def run_all(lab: Lab) -> list[Finding]:
     findings += check_build_plans(lab, states)
     findings += check_status(lab, states)
     findings += check_skills(lab)
+    findings += check_standards(lab)
     findings += check_bridges(lab)
     findings += check_links(lab)
     return findings

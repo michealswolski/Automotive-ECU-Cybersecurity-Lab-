@@ -12,6 +12,7 @@ Zero third-party dependencies. `tomllib` has been in the standard library since 
 |---|---|---|
 | `make status` | `labctl status` | Per-project phases, acceptance progress, effort |
 | `make validate` | `labctl validate` | Every consistency rule; exits non-zero on any finding |
+| `make standards` | `labctl standards` | The standards register, and which rows need re-checking |
 | `make render` | `labctl render` | Regenerate every generated block from the manifest |
 | `make test` | `pytest` | The tool's own test suite |
 | `make lint` | `ruff` | Lint and format check |
@@ -32,6 +33,8 @@ Zero third-party dependencies. `tomllib` has been in the standard library since 
 **`[[project]]`** — one entry per project: id, display number, build order, title, status, language, effort, a summary, the centerpiece demo, the capabilities it covers, and the bridges it consumes and provides.
 
 **`[[skill]]`** — every capability the portfolio either demonstrates or explicitly does not. Bench-only skills carry `bench_only = true`.
+
+**`[[standard]]`** — the standards register: the edition each project should cite, its status, when it was last checked (`verified`) and against what (`source`: `web` for a source consulted on that date, `report` for a row taken from the 2026 spec-validation report). See [standards register](./standards-register.md).
 
 Status values are `specified`, `building`, `built`, and they mean exactly what the validation rules enforce — see below.
 
@@ -56,6 +59,10 @@ Files containing generated content mark it with a comment pair:
 | `build-order` | The recommended sequence with reasons |
 | `coverage-matrix` | Capability by project, grouped by domain |
 | `bench-gaps` | The capabilities deliberately not claimed |
+| `standards-register` | The full standards register, grouped |
+| `standards-notes` | Each register row's engineering guidance |
+| `standards-watchlist` | Rows under active revision |
+| `project-standards` | Which documents each project implements |
 | `totals` | The projects / phases / acceptance-criteria summary line |
 
 Blocks containing project links are rendered path-aware: the same block emits `./projects/…` in the root README and `../projects/…` in `docs/`, so the link checker passes in both.
@@ -70,17 +77,22 @@ Blocks containing project links are rendered path-aware: the same block emits `.
 |---|---|
 | `project-dir` | A manifest project has no directory under `projects/` |
 | `orphan-project` | A directory under `projects/` has no manifest entry |
-| `project-files` | A project is missing one of the seven required files — `README.md`, `SPEC.md`, `BUILD_PLAN.md`, `ACCEPTANCE.md`, `CLAUDE.md`, `prompts/kickoff.md`, `docs/interview-talking-points.md` |
+| `project-files` | A project is missing one of the eight required files — `README.md`, `SPEC.md`, `BUILD_PLAN.md`, `ACCEPTANCE.md`, `CLAUDE.md`, `CORRECTIONS.md`, `prompts/kickoff.md`, `docs/interview-talking-points.md` |
 | `build-plan` | A `BUILD_PLAN.md` has no parseable `## Phase N` headings |
 | `acceptance` | An `ACCEPTANCE.md` has no checklist items |
 | `status` | A project is marked `built` with acceptance criteria still unchecked, or marked `specified` after work has visibly started |
 | `skill-ref` | A project claims a capability id that is not declared |
 | `uncovered-skill` | A declared capability is covered by no project and is not marked `bench_only` |
 | `bench-claim` | **A project claims a capability that requires hardware** |
+| `standard-ref` | A project cites a standard that is not declared in the register |
+| `superseded-standard` | **A project cites an edition marked superseded** |
+| `orphan-standard` | A register row is cited by no project |
+| `no-standard` | A project cites no standard at all |
+| `standard-verified` | A register row's `verified` value is not an ISO date |
 | `bridge` | A project consumes a bridge nothing provides |
 | `dead-link` | A relative Markdown link does not resolve |
 
-The `bench-claim` rule is the one worth pointing at. It is the repository's [claim-discipline policy](./honest-claims.md) expressed as an executable rule instead of a paragraph of good intentions — a policy that fails the build is a policy that survives a deadline.
+Two rules are worth pointing at. `superseded-standard` makes "cite the current edition" a property of the build rather than a hope — mark a row superseded and every project still citing it fails until it is updated. And `bench-claim` It is the repository's [claim-discipline policy](./honest-claims.md) expressed as an executable rule instead of a paragraph of good intentions — a policy that fails the build is a policy that survives a deadline.
 
 External links are not followed. CI runs offline, and a network check would make the build flaky for no benefit.
 
@@ -108,9 +120,9 @@ make check              # everything CI runs
 
 ## Adding a project
 
-1. Create `projects/<id>/` with all seven required files.
+1. Create `projects/<id>/` with all eight required files.
 2. Add a `[[project]]` entry to `lab.toml` with a unique `id`, `number` and `order`.
-3. Make sure every id in its `covers` list is declared as a `[[skill]]`.
+3. Make sure every id in its `covers` list is declared as a `[[skill]]`, and every id in its `standards` list as a `[[standard]]`.
 4. `make render` — the README tables update themselves.
 5. `make check` — confirm nothing broke.
 

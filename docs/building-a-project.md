@@ -9,6 +9,7 @@ Every project directory in `projects/` is a complete engineering package: the co
 | File | Role |
 |---|---|
 | `CLAUDE.md` | Standing constraints — the non-negotiables, the engineering standards, the facts to verify before writing code |
+| `CORRECTIONS.md` | Standards anchors that have moved since the spec was written. **Authoritative where it disagrees with `SPEC.md`.** |
 | `SPEC.md` | The source of truth. Byte layouts, state machines, reason codes, scenario tables |
 | `BUILD_PLAN.md` | Phase order, each phase with its own acceptance criteria |
 | `ACCEPTANCE.md` | The definition of done for the whole project |
@@ -25,6 +26,8 @@ The specification comes first on purpose. It is the difference between *"I built
 cd projects/secure-boot-chain-simulator
 claude                     # then paste prompts/kickoff.md
 ```
+
+**Read `CORRECTIONS.md` first.** Several standards anchors in the six specifications have moved since they were written — the AUTOSAR release, the UDS security services, the post-quantum firmware-signing story, tool maintenance status. The corrections file wins wherever it disagrees with the spec, and building without it produces code that is wrong in exactly the ways an interviewer checks. Full reasoning: [spec corrections](./spec-corrections.md).
 
 Then, per phase:
 
@@ -64,7 +67,7 @@ Every project's `CLAUDE.md` has a "verify before coding" section, and it exists 
 
 - **`python-can`** — the constructor keyword is `interface=`, not the older `bustype=`. Two `VirtualBus` instances exchange messages only *within one process*.
 - **`cryptography`** — ML-DSA availability is version-dependent. Probe for it; gate the post-quantum backend behind a feature flag; never fake a PQ signature.
-- **Standards revisions** — check the current NIST SP 800-57 revision, the current AUTOSAR release for the SecOC specification, and any clause number before citing it. Cite by document name when a clause cannot be confirmed.
+- **Standards revisions** — the [standards register](./standards-register.md) pins the edition to cite for every document in the portfolio, with the date it was last checked. Start there rather than recalling. Anything on its re-check list (`make standards`) is under active revision and needs confirming before it is quoted.
 - **Tooling invocations** — `cppcheck`, `clang-tidy`, `syft`, `grype`, `osv-scanner` all change flags between releases. Confirm before wiring a pipeline around them.
 
 A wrong version number in a README is a small error. A wrong clause number in a TARA is the tell that the citations are decorative.
