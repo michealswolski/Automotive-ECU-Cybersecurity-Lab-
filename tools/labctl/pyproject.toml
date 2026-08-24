@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "labctl"
+version = "1.0.0"
+description = "Repository tooling for the Automotive ECU Cybersecurity Lab"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+# No runtime dependencies. tomllib is stdlib from 3.11, and everything else
+# this tool does is string handling. A clean checkout with a bare interpreter
+# can run `python -m labctl status` with no install step at all.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+labctl = "labctl.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["labctl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

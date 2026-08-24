@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Project build output — the six projects generate these once implemented
+projects/*/out/
+projects/*/build/
+projects/*/.venv/
+projects/*/*.db
+projects/*/*.sqlite3
+
+# Key material and secrets. Nothing in this repository should ever hold a real
+# private key, but a build in progress can leave test keys on disk.
+*.pem
+*.key
+*.p12
+*.pfx
+keys/
+!**/testdata/**/*.pem
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs and scratch
+*.log
+scratch/
+tmp/

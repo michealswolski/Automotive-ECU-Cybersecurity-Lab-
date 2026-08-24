@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="28" viewBox="0 0 900 28" role="presentation" aria-hidden="true">
+  <defs>
+    <linearGradient id="dLine" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#22D3EE" stop-opacity="0"/><stop offset="18%" stop-color="#22D3EE" stop-opacity="0.8"/><stop offset="50%" stop-color="#3B82F6" stop-opacity="0.8"/><stop offset="82%" stop-color="#34D399" stop-opacity="0.8"/><stop offset="100%" stop-color="#34D399" stop-opacity="0"/></linearGradient>
+    <radialGradient id="dPulse" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#67E8F9" stop-opacity="0.95"/><stop offset="100%" stop-color="#67E8F9" stop-opacity="0"/></radialGradient>
+  </defs>
+  <style>
+    .pulse{animation:travel 6s cubic-bezier(.55,0,.45,1) infinite}
+    .tick{animation:twinkle 3.4s ease-in-out infinite}
+    @keyframes travel{0%{transform:translateX(40px);opacity:1}100%{transform:translateX(860px);opacity:1}}
+    @keyframes twinkle{0%,100%{opacity:.25}50%{opacity:.8}}
+    @media (prefers-reduced-motion: reduce){.pulse,.tick{animation:none}}
+  </style>
+  <line x1="0" y1="14.0" x2="900" y2="14.0" stroke="url(#dLine)" stroke-width="1.4"/>
+  <rect class="tick" x="90" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:0.0s"/>
+  <rect class="tick" x="180" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:0.28s"/>
+  <rect class="tick" x="270" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:0.56s"/>
+  <rect class="tick" x="360" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:0.84s"/>
+  <rect class="tick" x="450" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:1.12s"/>
+  <rect class="tick" x="540" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:1.4s"/>
+  <rect class="tick" x="630" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:1.68s"/>
+  <rect class="tick" x="720" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:1.96s"/>
+  <rect class="tick" x="810" y="10.0" width="1.4" height="8" fill="#22D3EE" opacity="0.28" style="animation-delay:2.24s"/>
+  <g class="pulse" opacity="0"><circle cx="0" cy="14.0" r="11" fill="url(#dPulse)"/><circle cx="0" cy="14.0" r="2.6" fill="#67E8F9"/></g>
+  <path d="M8 7.0 v14 M14 10.0 v8" stroke="#22D3EE" stroke-opacity="0.75" stroke-width="1.4"/>
+  <path d="M892 7.0 v14 M886 10.0 v8" stroke="#34D399" stroke-opacity="0.75" stroke-width="1.4"/>
+</svg>
