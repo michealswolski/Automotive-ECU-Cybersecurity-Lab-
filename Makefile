@@ -30,6 +30,10 @@ show: ## Detail for one project — make show PROJECT=can-secoc-demo
 validate: ## Every repository consistency rule
 	@$(LABCTL) validate
 
+.PHONY: standards
+standards: ## The standards register, and what needs re-checking
+	@$(LABCTL) standards
+
 .PHONY: render
 render: ## Regenerate the documentation blocks from lab.toml
 	@$(LABCTL) render

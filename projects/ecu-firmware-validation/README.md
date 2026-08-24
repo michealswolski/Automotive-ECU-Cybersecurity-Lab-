@@ -67,6 +67,12 @@ Embedded C · FreeRTOS · static analysis · sanitizers · coverage-guided fuzzi
 
 Four of these are rows the other five projects leave completely open. Full matrix: [capability coverage](../../docs/skills-coverage.md).
 
+## Standards
+
+Implements: **ISO/SAE 21434 · ISO 14229-1 · ISO 15765-2 · MISRA C:2012 · SEI CERT C · CycloneDX · SPDX · EU Cyber Resilience Act**.
+
+Editions are pinned and dated in the [standards register](../../docs/standards-register.md). Several anchors have moved since this specification was written — read [`CORRECTIONS.md`](./CORRECTIONS.md) before writing code.
+
 ## Claim discipline
 
 Say: *"I wrote FreeRTOS-based ECU firmware in C for an emulated Cortex-M target with a UDS/ISO-TP diagnostic stack, planted and documented eight vulnerability classes, and built a validation pipeline using static analysis, sanitizers, coverage-guided fuzzing, and SBOM/CVE scanning, with tests traced to security requirements."*

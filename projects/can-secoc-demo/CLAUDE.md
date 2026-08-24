@@ -1,5 +1,12 @@
 # CLAUDE.md - CAN Bus SecOC Demo
 
+> **Read [`CORRECTIONS.md`](./CORRECTIONS.md) before writing any code.** Several
+> standards anchors in this file and in `SPEC.md` have moved since they were
+> written — AUTOSAR release, UDS security services, the post-quantum firmware
+> signing story, tool maintenance status. The corrections file is authoritative
+> where it disagrees with the text below. Editions to cite are in
+> [`docs/standards-register.md`](../../docs/standards-register.md).
+
 You are building this project from scratch. Read `SPEC.md` (source of truth) and `BUILD_PLAN.md`
 (phase order) before writing code.
 

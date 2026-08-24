@@ -201,6 +201,89 @@ def bench_gaps(lab: Lab, states: dict[str, ProjectState], prefix: str = "./") ->
     return "\n" + "\n".join(lines) + "\n"
 
 
+STANDARD_ICON = {
+    "current": "●",
+    "imminent": "◐",
+    "draft": "◐",
+    "superseded": "✕",
+}
+
+STANDARD_STATUS = {
+    "current": "Current",
+    "imminent": "Publication imminent",
+    "draft": "Revision in draft",
+    "superseded": "Superseded",
+}
+
+
+def standards_register(lab: Lab, states: dict[str, ProjectState], prefix: str = "./") -> str:
+    """The full register, grouped, with the edition to cite and who cites it."""
+    out: list[str] = []
+    for group, standards in lab.standard_groups().items():
+        out.append(f"### {group}")
+        out.append("")
+        out.append("| Standard | Edition to cite | Status | Cited by | Checked |")
+        out.append("|---|---|---|:---:|---|")
+        for standard in standards:
+            citing = " ".join(f"`{p.number:02d}`" for p in lab.citing(standard.id)) or "—"
+            checked = f"{standard.verified} · {standard.source}"
+            out.append(
+                f"| **{standard.name}** — {standard.title} "
+                f"| {standard.edition} "
+                f"| {STANDARD_ICON[standard.status]} {STANDARD_STATUS[standard.status]} "
+                f"| {citing} "
+                f"| {checked} |"
+            )
+        out.append("")
+    return "\n" + "\n".join(out).rstrip() + "\n"
+
+
+def standards_notes(lab: Lab, states: dict[str, ProjectState], prefix: str = "./") -> str:
+    """Every register row's note, which is where the actual engineering
+    guidance lives."""
+    out: list[str] = []
+    for group, standards in lab.standard_groups().items():
+        out.append(f"### {group}")
+        out.append("")
+        for standard in standards:
+            if not standard.note:
+                continue
+            out.append(f"**{standard.name} — {standard.edition}**")
+            out.append("")
+            out.append(standard.note)
+            out.append("")
+    return "\n" + "\n".join(out).rstrip() + "\n"
+
+
+def standards_watchlist(lab: Lab, states: dict[str, ProjectState], prefix: str = "./") -> str:
+    """Rows under active revision — the ones to re-check before quoting."""
+    moving = [s for s in lab.standards if s.moving]
+    if not moving:
+        return "\nNothing in the register is under active revision.\n"
+    lines = [
+        "| Standard | Cite this today | Where it stands | Affects |",
+        "|---|---|---|:---:|",
+    ]
+    for standard in moving:
+        citing = " ".join(f"`{p.number:02d}`" for p in lab.citing(standard.id)) or "—"
+        lines.append(
+            f"| **{standard.name}** | {standard.edition} "
+            f"| {STANDARD_STATUS[standard.status]} | {citing} |"
+        )
+    return "\n" + "\n".join(lines) + "\n"
+
+
+def project_standards(lab: Lab, states: dict[str, ProjectState], prefix: str = "./") -> str:
+    """One row per project naming the documents it implements."""
+    lines = ["| # | Project | Implements |", "|---|---|---|"]
+    for project in lab.by_number():
+        names = ", ".join(lab.standard(s).name for s in project.standards) or "—"
+        lines.append(
+            f"| `{project.number:02d}` | [{project.title}]({prefix}{project.path}) | {names} |"
+        )
+    return "\n" + "\n".join(lines) + "\n"
+
+
 def build_order(lab: Lab, states: dict[str, ProjectState], prefix: str = "./") -> str:
     """Recommended order, with the reason each position is where it is."""
     reasons = {
@@ -241,6 +324,10 @@ GENERATORS = {
     "coverage-matrix": coverage_matrix,
     "bench-gaps": bench_gaps,
     "build-order": build_order,
+    "standards-register": standards_register,
+    "standards-notes": standards_notes,
+    "standards-watchlist": standards_watchlist,
+    "project-standards": project_standards,
     "totals": totals,
 }
 

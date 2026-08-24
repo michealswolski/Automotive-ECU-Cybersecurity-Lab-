@@ -42,7 +42,7 @@ Each project ships as a complete engineering package before a line of code exist
 - 🎯 **Audience:** an automotive cybersecurity interviewer who will skim the README, run one command, and then ask what happens if they flip a bit.
 - 🧪 **Method:** simulation-first, hardware-honest — every project says out loud which parts model hardware and which parts touch it (none).
 - 🔗 **Composition:** the projects are designed to plug into each other. Two repos that compose beat three that don't.
-- 📐 **Standards:** ISO/SAE 21434, UN R155/R156, AUTOSAR SecOC, NIST SP 800-57 — used as published, cited by name, never fabricated.
+- 📐 **Standards:** every project names the document it implements, and the [edition it cites is pinned, dated and enforced](#standards-traceability) — not recalled.
 
 <div align="center">
 
@@ -262,6 +262,49 @@ Reasoning behind each position: [`docs/build-order.md`](./docs/build-order.md).
 
 </div>
 
+## Standards traceability
+
+Naming ISO/SAE 21434 Clause 15 is a credibility multiplier. Naming AUTOSAR R20-11 in 2026 undoes it in one sentence. So the editions are not recalled — they are pinned in `lab.toml`, dated, and enforced.
+
+<!-- labctl:begin project-standards -->
+
+| # | Project | Implements |
+|---|---|---|
+| `01` | [Secure Boot Chain Simulator](./projects/secure-boot-chain-simulator) | SAE J3101, NIST SP 800-193, NIST SP 800-208, NSA CNSA 2.0, FIPS 204, UN ECE R156, ISO 24089 |
+| `02` | [CAN Bus SecOC Demo](./projects/can-secoc-demo) | AUTOSAR SecOC, RFC 4493, NIST SP 800-38B, ISO 11898-1 |
+| `03` | [ECU Key Lifecycle Manager](./projects/ecu-key-lifecycle) | NIST SP 800-57 Part 1, NIST SP 800-130, RFC 9162, UN ECE R156, ISO 24089 |
+| `04` | [ISO/SAE 21434 TARA Workbench](./projects/tara-workbench) | ISO/SAE 21434, ISO/SAE PAS 8475, UN ECE R155 |
+| `05` | [In-Vehicle Network Security Lab](./projects/ivn-security-lab) | ISO 11898-1, ISO 15765-2, ISO 14229-1, ISO 13400-2, LIN 2.2A / ISO 17987, IEEE 802.1AE (MACsec), AUTOSAR SecOC |
+| `06` | [ECU Firmware Security Validation Pipeline](./projects/ecu-firmware-validation) | ISO/SAE 21434, ISO 14229-1, ISO 15765-2, MISRA C:2012, SEI CERT C, CycloneDX, SPDX, EU Cyber Resilience Act |
+
+<!-- labctl:end project-standards -->
+
+Every row of the [standards register](./docs/standards-register.md) records the edition to cite, when it was last checked, and against what. `labctl validate` fails the build if a project cites a standard that is not declared, cites one marked superseded, or cites nothing at all. `make standards` prints the register and flags what needs re-checking.
+
+Two entries are under active revision right now — ISO/SAE 8475 (CAL/TAF) at final approval, and NIST SP 800-57 Part 1 with a Revision 6 draft out. Both are labelled as such rather than quoted as settled.
+
+### What moved
+
+The six specifications were drafted against an earlier snapshot of that landscape. [`docs/spec-corrections.md`](./docs/spec-corrections.md) is the delta, and each project carries its own build-facing checklist in `CORRECTIONS.md`. The five that matter most:
+
+| Was | Is |
+|---|---|
+| ML-DSA as the post-quantum firmware-signing root | **CNSA 2.0 names LMS or XMSS** for firmware signing. ML-DSA-87 is for general signatures. |
+| UDS security access is 0x27 seed/key | **ISO 14229-1:2020 added 0x29 Authentication**; ISO 15765-4 deprecates 0x27 for new designs. |
+| AUTOSAR R20-11 / R21-11 | **R25-11**, released December 2025. |
+| SBOM required by UN R155 or ISO/SAE 21434 | **Neither mandates one.** The EU Cyber Resilience Act does — the first binding SBOM mandate in law. |
+| SAE J3101 is in development | **Published February 2020.** |
+
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/divider.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./assets/divider-light.svg">
+  <img src="./assets/divider.svg" width="100%" alt="" />
+</picture>
+
+</div>
+
 ## Current status
 
 Each project's `ACCEPTANCE.md` is its definition of done. This table is generated from those files, so it cannot flatter the repo — a project reads as complete only when every box in its own checklist is ticked.
@@ -336,9 +379,10 @@ claude                         # then paste prompts/kickoff.md
 │       ├── SPEC.md           # technical specification — the source of truth
 │       ├── BUILD_PLAN.md     # phases, each with its own acceptance criteria
 │       ├── ACCEPTANCE.md     # the definition of done
+│       ├── CORRECTIONS.md    # standards anchors that moved — read before building
 │       ├── prompts/          # the kickoff prompt and follow-ups
 │       └── docs/             # interview talking points and per-project notes
-├── docs/                     # cross-cutting docs — claims policy, glossary, bench path
+├── docs/                     # cross-cutting docs — standards register, claims policy, glossary
 ├── assets/                   # SVG graphics, generated from tools/assets/render_assets.py
 ├── site/                     # the GitHub Pages landing page
 └── tools/
@@ -353,7 +397,8 @@ claude                         # then paste prompts/kickoff.md
 | Command | What it does |
 |---|---|
 | `make status` | Per-project phases, acceptance progress and effort |
-| `make validate` | Every consistency rule — missing kit files, unresolvable skill claims, dead links, a project marked done with work outstanding |
+| `make validate` | Every consistency rule — missing kit files, unresolvable skill or standard claims, a superseded edition still cited, dead links, a project marked done with work outstanding |
+| `make standards` | The standards register, and which entries need re-checking |
 | `make render` | Regenerate every table in the docs from the manifest |
 | `make test` | The tooling's own test suite |
 | `make assets` | Regenerate the SVGs in both themes |
@@ -401,6 +446,8 @@ Which project demonstrates what. The full matrix, grouped by domain, is in [`doc
 | [Portfolio map](./docs/portfolio-map.md) | How the six projects hand off to each other, and why that matters more than any one of them |
 | [Build order](./docs/build-order.md) | Why each project sits where it does in the sequence |
 | [Building a project](./docs/building-a-project.md) | The workflow for taking one project from specification to a working demo |
+| [Standards register](./docs/standards-register.md) | The edition each project cites, when it was last checked, and against what |
+| [Spec corrections](./docs/spec-corrections.md) | What moved in the standards landscape, and what each project must change |
 | [Honest claims](./docs/honest-claims.md) | What to say about this work, what not to say, and the rule that decides |
 | [Bench path](./docs/bench-path.md) | The hardware gaps, what closing each one costs, and what it converts a claim into |
 | [Capability coverage](./docs/skills-coverage.md) | The full capability-by-project matrix |

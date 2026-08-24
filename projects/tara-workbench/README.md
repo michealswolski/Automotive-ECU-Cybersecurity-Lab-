@@ -69,6 +69,12 @@ ISO/SAE 21434 · TARA · threat modelling · attack feasibility rating · risk d
 
 Full matrix: [capability coverage](../../docs/skills-coverage.md).
 
+## Standards
+
+Implements: **ISO/SAE 21434 · ISO/SAE PAS 8475 · UN ECE R155**.
+
+Editions are pinned and dated in the [standards register](../../docs/standards-register.md). Several anchors have moved since this specification was written — read [`CORRECTIONS.md`](./CORRECTIONS.md) before writing code.
+
 ## Claim discipline
 
 Say: *"I implemented the publicly described ISO/SAE 21434 TARA workflow as a tool with enforced traceability, and produced a complete worked threat analysis for a telematics gateway ECU."*

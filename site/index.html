@@ -276,6 +276,7 @@
     <a class="link" href="#projects">Projects</a>
     <a class="link" href="#compose">How they compose</a>
     <a class="link" href="#order">Build order</a>
+    <a class="link" href="#standards">Standards</a>
     <a class="link" href="#claims">Claims</a>
     <span class="spacer"></span>
     <a class="cta" href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-">View on GitHub&nbsp;↗</a>
@@ -295,6 +296,7 @@
       <div class="stat"><b>6</b><span>Projects</span></div>
       <div class="stat"><b>56</b><span>Core build phases</span></div>
       <div class="stat"><b>114</b><span>Acceptance criteria</span></div>
+      <div class="stat"><b>27</b><span>Standards pinned</span></div>
       <div class="stat"><b>5</b><span>Capabilities not claimed</span></div>
     </div>
   </div>
@@ -522,7 +524,67 @@
   </div>
 </section>
 
-<section>
+<section id="standards">
+  <div class="wrap">
+    <p class="eyebrow">Traceability</p>
+    <h2>Every project names the document it implements</h2>
+    <p class="lede">
+      Naming ISO/SAE 21434 Clause 15 is a credibility multiplier. Naming AUTOSAR R20-11 in 2026
+      undoes it in one sentence. So the editions are not recalled — they are pinned in the manifest,
+      dated, and enforced.
+    </p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th class="num">#</th><th>Project</th><th>Implements</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">01</td><td>Secure Boot Chain Simulator</td><td>SAE J3101 · NIST SP 800-193 · SP 800-208 · NSA CNSA 2.0 · FIPS 204 · UN R156 · ISO 24089</td></tr>
+          <tr><td class="num">02</td><td>CAN Bus SecOC Demo</td><td>AUTOSAR FO R25-11 PRS SecOcProtocol · RFC 4493 · NIST SP 800-38B · ISO 11898-1:2024</td></tr>
+          <tr><td class="num">03</td><td>ECU Key Lifecycle Manager</td><td>NIST SP 800-57 Pt 1 Rev 5 · SP 800-130 · RFC 9162 · UN R156 · ISO 24089</td></tr>
+          <tr><td class="num">04</td><td>ISO/SAE 21434 TARA Workbench</td><td>ISO/SAE 21434:2021 Clause 15 · ISO/SAE PAS 8475 · UN R155</td></tr>
+          <tr><td class="num">05</td><td>In-Vehicle Network Security Lab</td><td>ISO 11898-1:2024 · ISO 15765-2:2016 · ISO 14229-1:2020 · ISO 13400-2:2019 · LIN 2.2A · IEEE 802.1AE</td></tr>
+          <tr><td class="num">06</td><td>ECU Firmware Validation Pipeline</td><td>ISO/SAE 21434 Clauses 11 &amp; 15 · MISRA C:2012 · SEI CERT C · CycloneDX / SPDX · EU CRA</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:26px">
+      The <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/standards-register.md">standards register</a> records, for
+      each of 27 documents, the edition to cite, when it was last checked and against what. The
+      build <strong>fails</strong> if a project cites a standard that is not declared, cites one
+      marked superseded, or cites nothing at all.
+    </p>
+
+    <h3 style="margin-top:34px">What moved</h3>
+    <p class="lede" style="margin-bottom:18px">
+      The six specifications were drafted against an earlier snapshot. These are the five corrections
+      that matter most — each one checkable in seconds by someone who works in the field.
+    </p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Was</th><th>Is</th></tr></thead>
+        <tbody>
+          <tr><td>ML-DSA as the post-quantum firmware-signing root</td><td><strong>CNSA 2.0 names LMS or XMSS</strong> for firmware signing. ML-DSA-87 is for general signatures.</td></tr>
+          <tr><td>UDS security access is 0x27 seed/key</td><td><strong>ISO 14229-1:2020 added 0x29 Authentication</strong>; ISO 15765-4 deprecates 0x27 for new designs.</td></tr>
+          <tr><td>AUTOSAR R20-11 / R21-11</td><td><strong>R25-11</strong>, released December 2025.</td></tr>
+          <tr><td>SBOM required by UN R155 or ISO/SAE 21434</td><td><strong>Neither mandates one.</strong> The EU Cyber Resilience Act does — the first binding SBOM mandate in law.</td></tr>
+          <tr><td>SAE J3101 is in development</td><td><strong>Published February 2020.</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:22px">
+      Full delta, with provenance for every claim:
+      <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/spec-corrections.md">spec corrections&nbsp;↗</a>.
+      Each project also carries its own build-facing checklist in <code>CORRECTIONS.md</code>.
+    </p>
+  </div>
+</section>
+
+<section id="try">
   <div class="wrap">
     <p class="eyebrow">Try it</p>
     <h2>Runs thirty seconds after cloning</h2>
@@ -563,6 +625,7 @@ claude        <span class="c"># then paste prompts/kickoff.md</span>
     <div class="links">
       <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-">Repository&nbsp;↗</a>
       <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/portfolio-map.md">Portfolio map&nbsp;↗</a>
+      <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/standards-register.md">Standards register&nbsp;↗</a>
       <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/glossary.md">Glossary&nbsp;↗</a>
       <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/honest-claims.md">Honest claims&nbsp;↗</a>
       <a href="https://michealswolski.github.io">Portfolio&nbsp;↗</a>

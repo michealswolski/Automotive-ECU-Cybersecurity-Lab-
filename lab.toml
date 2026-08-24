@@ -53,6 +53,15 @@ covers = [
   "ecc-signatures",
   "audit-logging",
 ]
+standards = [
+  "sae-j3101",
+  "nist-sp-800-193",
+  "nist-sp-800-208",
+  "cnsa-2-0",
+  "fips-204",
+  "un-r156",
+  "iso-24089",
+]
 consumes = []
 provides = []
 
@@ -80,6 +89,12 @@ covers = [
   "aes",
   "replay-protection",
   "freshness-management",
+]
+standards = [
+  "autosar-secoc",
+  "rfc-4493",
+  "nist-sp-800-38b",
+  "iso-11898-1",
 ]
 consumes = ["can-secoc-demo:mac-keys"]
 provides = ["can-secoc-demo:authenticator"]
@@ -111,6 +126,13 @@ covers = [
   "audit-logging",
   "pki",
 ]
+standards = [
+  "nist-sp-800-57-1",
+  "nist-sp-800-130",
+  "rfc-9162",
+  "un-r156",
+  "iso-24089",
+]
 consumes = []
 provides = ["can-secoc-demo:mac-keys"]
 
@@ -139,6 +161,11 @@ covers = [
   "risk-assessment",
   "security-requirements",
   "traceability",
+  "un-r155",
+]
+standards = [
+  "iso-sae-21434",
+  "iso-sae-8475",
   "un-r155",
 ]
 consumes = []
@@ -171,6 +198,15 @@ covers = [
   "network-segmentation",
   "anomaly-detection",
 ]
+standards = [
+  "iso-11898-1",
+  "iso-15765-2",
+  "iso-14229-1",
+  "iso-13400-2",
+  "lin-2-2a",
+  "ieee-802-1ae",
+  "autosar-secoc",
+]
 consumes = ["can-secoc-demo:authenticator", "tara-workbench:requirements"]
 provides = []
 
@@ -202,6 +238,16 @@ covers = [
   "test-traceability",
   "uds",
   "iso-tp",
+]
+standards = [
+  "iso-sae-21434",
+  "iso-14229-1",
+  "iso-15765-2",
+  "misra-c-2012",
+  "cert-c",
+  "cyclonedx",
+  "spdx",
+  "eu-cra",
 ]
 consumes = ["tara-workbench:requirements"]
 provides = []
@@ -425,3 +471,431 @@ id = "real-can-hardware"
 label = "Physical CAN bus / transceivers"
 group = "Bench"
 bench_only = true
+
+# ---------------------------------------------------------------------------
+# Standards register
+#
+# The single biggest credibility problem in a security portfolio is citing an
+# edition that has moved. This register pins the edition each project should
+# cite, records when it was last checked and against what, and lets
+# `labctl validate` reject a project that cites a superseded document.
+#
+# status:
+#   current      — the edition to cite
+#   imminent     — final approval reached, publication expected; cite as pending
+#   draft        — a public draft exists; cite the current edition, mention the draft
+#   superseded   — do NOT cite as current; a project citing this fails the build
+#
+# source:
+#   web          — checked against a primary or reputable secondary source on `verified`
+#   report       — taken from the 2026 spec-validation report, not independently rechecked
+#
+# `verified` is the date the row was last checked, not the document's date.
+# Re-check anything under active revision before quoting it — see
+# docs/standards-register.md.
+# ---------------------------------------------------------------------------
+
+[[standard]]
+id = "iso-sae-21434"
+name = "ISO/SAE 21434"
+title = "Road vehicles — Cybersecurity engineering"
+edition = "2021 (first edition)"
+status = "current"
+group = "Process & regulation"
+verified = "2026-08-24"
+source = "report"
+note = """
+Clause 15 is the TARA clause; Clause 11 is verification & validation. Entered \
+ISO systematic review in July 2026; a second edition is expected to start \
+development in 2026 on a roughly three-year timeline. No revision yet — say \
+review has begun. Paywalled: cite public secondary sources for tables rather \
+than reproducing them."""
+
+[[standard]]
+id = "iso-sae-8475"
+name = "ISO/SAE PAS 8475"
+title = "Cybersecurity Assurance Levels (CAL) and Targeted Attack Feasibility (TAF)"
+edition = "PAS, stage 50.20"
+status = "imminent"
+group = "Process & regulation"
+verified = "2026-08-24"
+source = "web"
+note = """
+At final approval as of mid-July 2026, publication expected imminently. Makes \
+CAL prescriptive and redefines the levels as Basic/Intermediate/Advanced, \
+replacing the informative CAL1–CAL4 of ISO/SAE 21434 Annex E. Adds TAF as a \
+design target distinct from descriptive attack feasibility. Supporting it is a \
+forward-looking differentiator; do not present it as published."""
+
+[[standard]]
+id = "un-r155"
+name = "UN ECE R155"
+title = "Cyber security and cyber security management system"
+edition = "Supplement 3 (in force 10 January 2025)"
+status = "current"
+group = "Process & regulation"
+verified = "2026-08-24"
+source = "report"
+note = """
+Mandatory in the EU for all new vehicles since 7 July 2024 (new types since \
+July 2022). Requires a certified CSMS plus per-type approval against the Annex \
+5 threat list. Does NOT mandate an SBOM — that is the CRA. Verify the Annex 5 \
+attack-vector count against the current EUR-Lex text; it drifts between \
+consolidated revisions."""
+
+[[standard]]
+id = "un-r156"
+name = "UN ECE R156"
+title = "Software update and software update management system"
+edition = "current series"
+status = "current"
+group = "Process & regulation"
+verified = "2026-08-24"
+source = "report"
+note = """
+The update-integrity companion to R155: manufacturers must ensure the \
+integrity and authenticity of software updates and manage software \
+identification (RxSWIN). The natural regulatory hook for anti-rollback and \
+revocation."""
+
+[[standard]]
+id = "iso-24089"
+name = "ISO 24089"
+title = "Road vehicles — Software update engineering"
+edition = "2023"
+status = "current"
+group = "Process & regulation"
+verified = "2026-08-24"
+source = "report"
+note = "The engineering standard underpinning UN R156."
+
+[[standard]]
+id = "eu-cra"
+name = "EU Cyber Resilience Act"
+title = "Regulation (EU) 2024/2847"
+edition = "in force 10 December 2024"
+status = "current"
+group = "Process & regulation"
+verified = "2026-08-24"
+source = "web"
+note = """
+The first binding SBOM mandate in law: a machine-readable SBOM covering at \
+least top-level dependencies (Annex I Part II(1), Art. 13). Reporting duties \
+apply from 11 September 2026; full application 11 December 2027. Type-approved \
+whole vehicles are exempt under Art. 2(2)(c) — components, diagnostic and \
+development tools and aftermarket devices are in scope."""
+
+[[standard]]
+id = "autosar-secoc"
+name = "AUTOSAR SecOC"
+title = "FO PRS SecOcProtocol / CP SWS SecureOnboardCommunication"
+edition = "R25-11"
+status = "current"
+group = "Communication"
+verified = "2026-08-24"
+source = "web"
+note = """
+R25-11 was released in December 2025 and is current; R24-11 is the prior \
+release. The 2026 validation report names R24-11 as current — it is not, and \
+that correction is the point of this register. The three standard profiles \
+(1: 24Bit-CMAC-8Bit-FV, 2: 24Bit-CMAC-No-FV, 3: JASPAR) remain the only \
+numbered profiles; SecOC is transport-agnostic so CAN FD and Ethernet needed \
+no new profile."""
+
+[[standard]]
+id = "iso-11898-1"
+name = "ISO 11898-1"
+title = "Road vehicles — CAN — Data link layer and physical signalling"
+edition = "2024"
+status = "current"
+group = "Communication"
+verified = "2026-08-24"
+source = "report"
+note = """
+The 2024 edition also covers CAN XL (data fields to 2048 bytes). Update any \
+reference to the 2015 edition. CAN FD DLC-to-length above 8: 9→12, 10→16, \
+11→20, 12→24, 13→32, 14→48, 15→64; classic CAN maps DLC 9–15 all to 8."""
+
+[[standard]]
+id = "iso-15765-2"
+name = "ISO 15765-2"
+title = "Road vehicles — Diagnostic communication over CAN — Transport protocol"
+edition = "2016"
+status = "current"
+group = "Communication"
+verified = "2026-08-24"
+source = "report"
+note = """
+ISO-TP. Frame types: Single Frame, First Frame, Consecutive Frame, Flow \
+Control. Flow Control carries flow status (CTS / Wait / Overflow), block size \
+and STmin. A reassembler handling attacker-controlled length fields is the \
+right fuzzing target."""
+
+[[standard]]
+id = "iso-14229-1"
+name = "ISO 14229-1"
+title = "Road vehicles — Unified Diagnostic Services — Application layer"
+edition = "2020"
+status = "current"
+group = "Communication"
+verified = "2026-08-24"
+source = "web"
+note = """
+The 2020 edition introduced service 0x29 Authentication as the modern \
+replacement for 0x27 SecurityAccess: certificate-based PKI (APCE) and \
+symmetric challenge-response (ACR), with optional mutual authentication and \
+session-key derivation; positive response SID 0x69. 0x27 remains in the \
+standard but ISO 15765-4 deprecates it for new designs. A seed/key brute-force \
+scenario is still a valid attack on legacy 0x27 — but 0x29 must appear as the \
+remediation or the project reads as dated."""
+
+[[standard]]
+id = "iso-13400-2"
+name = "ISO 13400-2"
+title = "Road vehicles — Diagnostic communication over IP (DoIP)"
+edition = "2019"
+status = "current"
+group = "Communication"
+verified = "2026-08-24"
+source = "report"
+note = """
+The 2019 edition added secured (TLS) communication: TCP 13400 unsecured, TLS \
+on 3496. Routing activation sequence and payload types (vehicle ID, routing \
+activation, alive check, diagnostic message, entity status) are as specified. \
+Real-world TLS adoption still lags — do not imply it is universal."""
+
+[[standard]]
+id = "lin-2-2a"
+name = "LIN 2.2A / ISO 17987"
+title = "Local Interconnect Network"
+edition = "LIN 2.2A; ISO 17987 series"
+status = "current"
+group = "Communication"
+verified = "2026-08-24"
+source = "report"
+note = """
+Protected identifier parity: P0 = ID0 ⊕ ID1 ⊕ ID2 ⊕ ID4 (even); \
+P1 = ¬(ID1 ⊕ ID3 ⊕ ID4 ⊕ ID5) (odd). PID is the 6-bit frame ID in bits 0–5, \
+P0 in bit 6, P1 in bit 7. Classic checksum covers data bytes only (LIN 1.x); \
+enhanced checksum covers PID plus data (LIN 2.x); frame IDs 0x3C–0x3D always \
+use classic. LIN has no native security — contain it at the gateway rather \
+than inventing a fix."""
+
+[[standard]]
+id = "ieee-802-1ae"
+name = "IEEE 802.1AE (MACsec)"
+title = "Media Access Control Security"
+edition = "current; OPEN Alliance TC17 automotive profile in progress"
+status = "current"
+group = "Communication"
+verified = "2026-08-24"
+source = "report"
+note = """
+Automotive adoption is emerging, not universal. OPEN Alliance TC17 is defining \
+an automotive MACsec/MKA profile including for 10BASE-T1S — a work in \
+progress. Present MACsec as arriving, not as standard practice. TC8 is the \
+current Automotive Ethernet ECU test specification."""
+
+[[standard]]
+id = "rfc-4493"
+name = "RFC 4493"
+title = "The AES-CMAC Algorithm"
+edition = "2006"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "report"
+note = """
+The AES-CMAC reference and the source of the four known-answer test vectors \
+that gate the SecOC project's phase 1. Consistent with NIST SP 800-38B."""
+
+[[standard]]
+id = "nist-sp-800-38b"
+name = "NIST SP 800-38B"
+title = "Recommendation for Block Cipher Modes of Operation: the CMAC Mode"
+edition = "2005 (updated 2016)"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "report"
+note = "The CMAC mode specification. Cite alongside RFC 4493, not instead of it."
+
+[[standard]]
+id = "nist-sp-800-57-1"
+name = "NIST SP 800-57 Part 1"
+title = "Recommendation for Key Management: General"
+edition = "Revision 5 (May 2020)"
+status = "draft"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "web"
+note = """
+Rev 5 is the current published version and the one to cite. An initial public \
+draft of Revision 6 was published 5 December 2025 with comments through \
+5 February 2026; it adds the FIPS 203/204/205 algorithms and Ascon, and \
+replaces the algorithm-approval timeframes with references to SP 800-131A. \
+Cryptoperiods (Rev 5, Table 1): symmetric data-encryption / authentication / \
+key-wrapping keys — originator-usage period ≤ 2 years, recipient-usage ≤ OUP + \
+3 years; symmetric master or key-derivation key ~1 year; symmetric \
+key-agreement 1–2 years. These are guidance, not automotive mandates."""
+
+[[standard]]
+id = "nist-sp-800-130"
+name = "NIST SP 800-130"
+title = "A Framework for Designing Cryptographic Key Management Systems"
+edition = "2013"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "report"
+note = """
+Still a final publication, not withdrawn. The right CKMS design framework to \
+reference. SP 800-152 (US federal CKMS profile, 2015) is also final but is \
+US-federal-specific — do not overstate its applicability."""
+
+[[standard]]
+id = "nist-sp-800-193"
+name = "NIST SP 800-193"
+title = "Platform Firmware Resiliency Guidelines"
+edition = "May 2017"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "report"
+note = """
+Current, not withdrawn — the withdrawn item that surfaces in searches is the \
+initial public draft, not the final. Three principles: Protection, Detection, \
+Recovery, founded on roots of trust (RTU / RTD / RTRec)."""
+
+[[standard]]
+id = "nist-sp-800-208"
+name = "NIST SP 800-208"
+title = "Recommendation for Stateful Hash-Based Signature Schemes"
+edition = "2020"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "web"
+note = """
+Specifies LMS and XMSS — the schemes CNSA 2.0 names for firmware and software \
+signing. Stateful: one-time-use keys demand careful state management, which is \
+itself worth modelling."""
+
+[[standard]]
+id = "cnsa-2-0"
+name = "NSA CNSA 2.0"
+title = "Commercial National Security Algorithm Suite 2.0"
+edition = "May 2025 reissue"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "web"
+note = """
+For software and firmware signing CNSA 2.0 specifies the stateful hash-based \
+schemes LMS or XMSS — NOT ML-DSA. ML-DSA-87 is named for general signatures, \
+ML-KEM-1024 for key establishment, SHA-384/512 and SHA3-384/512 for internal \
+hardware functions. Timeline: support and prefer by 2025, exclusive use by \
+2030 for firmware signing. Treating ML-DSA as the CNSA-2.0 firmware signing \
+root is the single most common PQC-for-firmware error."""
+
+[[standard]]
+id = "fips-204"
+name = "FIPS 204"
+title = "Module-Lattice-Based Digital Signature Standard (ML-DSA)"
+edition = "finalized August 2024"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "web"
+note = """
+Finalized alongside FIPS 203 (ML-KEM) and FIPS 205 (SLH-DSA) in August 2024 — \
+none of the three is a draft. Python `cryptography` added ML-DSA-44/65/87 in \
+47.0.0 and broadened backend support in 48; post-quantum support requires an \
+AWS-LC or BoringSSL backend, and most published wheels ship OpenSSL, so gate \
+the feature and probe for it rather than assuming. SLH-DSA is not yet exposed."""
+
+[[standard]]
+id = "sae-j3101"
+name = "SAE J3101"
+title = "Hardware Protected Security for Ground Vehicles"
+edition = "J3101_202002 (February 2020)"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "report"
+note = """
+Published, not in development. Defines requirements via fundamental use cases \
+for a hardware protected security environment acting as a gatekeeper for \
+system data and control access. Requirements-oriented, not \
+implementation-prescriptive."""
+
+[[standard]]
+id = "rfc-9162"
+name = "RFC 9162"
+title = "Certificate Transparency Version 2.0"
+edition = "2021"
+status = "current"
+group = "Cryptography"
+verified = "2026-08-24"
+source = "report"
+note = """
+The Merkle-tree log model to reference for a tamper-evident audit log. A \
+hash chain proves nobody edited the log; a Merkle tree adds efficient \
+inclusion proofs; signing the head with an HSM-held key makes it \
+attributable rather than merely detectable."""
+
+[[standard]]
+id = "misra-c-2012"
+name = "MISRA C:2012"
+title = "Guidelines for the use of the C language in critical systems"
+edition = "with AMD1/2/3; 2023 consolidated re-issue"
+status = "current"
+group = "Firmware quality"
+verified = "2026-08-24"
+source = "report"
+note = """
+Paid standard. No fully free tool can certify MISRA compliance. cppcheck has a \
+MISRA add-on (`--addon=misra`) covering a subset; clang-tidy does not check \
+MISRA at all. Say 'checks a subset of MISRA rules via cppcheck', never 'MISRA \
+compliant' — full compliance needs a commercial tool such as Polyspace, \
+Helix QAC or LDRA."""
+
+[[standard]]
+id = "cert-c"
+name = "SEI CERT C"
+title = "CERT C Coding Standard"
+edition = "current"
+status = "current"
+group = "Firmware quality"
+verified = "2026-08-24"
+source = "report"
+note = """
+What the open static-analysis toolchain actually gives you. clang-tidy's \
+`cert-*` check set plus `bugprone-*`, `clang-analyzer-*` and `misc-*` is the \
+honest claim: CERT-C-oriented static analysis."""
+
+[[standard]]
+id = "cyclonedx"
+name = "CycloneDX"
+title = "SBOM format"
+edition = "current"
+status = "current"
+group = "Firmware quality"
+verified = "2026-08-24"
+source = "report"
+note = """
+Generated by syft; scanned by grype or osv-scanner. Both CycloneDX and SPDX \
+satisfy the CRA's 'commonly used, machine-readable format'. Firmware SBOMs are \
+harder than application SBOMs because vendored source and copied headers do \
+not announce themselves to a scanner — say so."""
+
+[[standard]]
+id = "spdx"
+name = "SPDX"
+title = "System Package Data Exchange (ISO/IEC 5962)"
+edition = "ISO/IEC 5962"
+status = "current"
+group = "Firmware quality"
+verified = "2026-08-24"
+source = "report"
+note = "The ISO-standardised SBOM format; the alternative to CycloneDX, not a replacement."

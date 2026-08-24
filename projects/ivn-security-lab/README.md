@@ -65,6 +65,12 @@ LIN · CAN-FD · Automotive Ethernet · SOME/IP + SD · DoIP · UDS · ISO-TP ·
 
 Full matrix: [capability coverage](../../docs/skills-coverage.md).
 
+## Standards
+
+Implements: **ISO 11898-1 · ISO 15765-2 · ISO 14229-1 · ISO 13400-2 · LIN 2.2A / ISO 17987 · IEEE 802.1AE (MACsec) · AUTOSAR SecOC**.
+
+Editions are pinned and dated in the [standards register](../../docs/standards-register.md). Several anchors have moved since this specification was written — read [`CORRECTIONS.md`](./CORRECTIONS.md) before writing code.
+
 ## Claim discipline
 
 Say: *"I built a simulated multi-protocol in-vehicle network — LIN, CAN-FD, and Automotive Ethernet with SOME/IP and DoIP — with a zone-based gateway firewall, and validated it with ten attack scenarios run against both permissive and hardened configurations."*

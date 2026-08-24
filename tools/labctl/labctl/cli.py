@@ -1,11 +1,12 @@
 """``labctl`` — the repository's own command line.
 
-Four verbs:
+Five verbs:
 
-* ``status``   — what is specified, what is being built, what is done
-* ``validate`` — every consistency rule, exit non-zero on any finding
-* ``render``   — regenerate the documentation blocks from ``lab.toml``
-* ``show``     — everything known about one project
+* ``status``    — what is specified, what is being built, what is done
+* ``validate``  — every consistency rule, exit non-zero on any finding
+* ``render``    — regenerate the documentation blocks from ``lab.toml``
+* ``standards`` — the standards register and what needs re-checking
+* ``show``      — everything known about one project
 
 No third-party dependencies. Colour is emitted only when stdout is a TTY, so
 piping into a file or a CI log stays clean.
@@ -20,8 +21,8 @@ from pathlib import Path
 
 from .inspect import inspect_all
 from .manifest import Lab, ManifestError, load
-from .render import EFFORT_LABEL, STATUS_ICON, STATUS_LABEL, render
-from .validate import run_all
+from .render import EFFORT_LABEL, STANDARD_ICON, STATUS_ICON, STATUS_LABEL, render
+from .validate import run_all, stale_standards
 
 _ANSI = {
     "reset": "\033[0m",
@@ -142,6 +143,46 @@ def cmd_render(lab: Lab, args: argparse.Namespace, out: Printer) -> int:
     return 0
 
 
+def _fit(text: str, width: int) -> str:
+    """Pad or ellipsise *text* to exactly *width* so terminal columns line up."""
+    if len(text) <= width:
+        return text.ljust(width)
+    return text[: width - 1] + "…"
+
+
+def cmd_standards(lab: Lab, args: argparse.Namespace, out: Printer) -> int:
+    """The register, grouped, with the re-check list at the end."""
+    out.line(out.paint("Standards register", "bold"))
+    out.line(
+        out.paint("The edition each project should cite, and when it was last checked.", "dim")
+    )
+
+    style = {"current": "green", "imminent": "yellow", "draft": "yellow", "superseded": "red"}
+    # One name column across every group so the register reads as one table,
+    # and a fixed edition column so the trailing columns stay aligned.
+    name_width = max(len(s.name) for s in lab.standards)
+    for group, standards in lab.standard_groups().items():
+        out.line()
+        out.line(out.paint(f"  {group.upper()}", "cyan"))
+        for standard in standards:
+            citing = " ".join(f"{p.number:02d}" for p in lab.citing(standard.id)) or "--"
+            out.line(
+                f"  {STANDARD_ICON[standard.status]} {standard.name.ljust(name_width)}  "
+                f"{out.paint(_fit(standard.edition, 32), style[standard.status])}  "
+                f"{citing:<14}  {out.paint(standard.verified + ' ' + standard.source, 'dim')}"
+            )
+
+    moving = stale_standards(lab)
+    out.line()
+    if moving:
+        out.line(out.paint("  Re-check before quoting:", "yellow"))
+        for standard in moving:
+            out.line(f"    · {standard.name} — {standard.edition}")
+    else:
+        out.line(out.paint("  Nothing in the register needs re-checking.", "green"))
+    return 0
+
+
 def cmd_show(lab: Lab, args: argparse.Namespace, out: Printer) -> int:
     try:
         project = lab.project(args.project)
@@ -167,6 +208,12 @@ def cmd_show(lab: Lab, args: argparse.Namespace, out: Printer) -> int:
     out.line(out.paint("Covers", "cyan"))
     for skill_id in project.covers:
         out.line(f"  · {lab.skill(skill_id).label}")
+    if project.standards:
+        out.line()
+        out.line(out.paint("Implements", "cyan"))
+        for standard_id in project.standards:
+            standard = lab.standard(standard_id)
+            out.line(f"  · {standard.name} — {standard.edition}")
     if project.consumes or project.provides:
         out.line()
         out.line(out.paint("Bridges", "cyan"))
@@ -198,6 +245,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("status", help="show what is specified, building and built")
     sub.add_parser("validate", help="run every repository consistency check")
+    sub.add_parser("standards", help="the standards register and what needs re-checking")
 
     render_parser = sub.add_parser("render", help="regenerate documentation blocks")
     render_parser.add_argument(
@@ -213,6 +261,7 @@ def build_parser() -> argparse.ArgumentParser:
 COMMANDS = {
     "status": cmd_status,
     "validate": cmd_validate,
+    "standards": cmd_standards,
     "render": cmd_render,
     "show": cmd_show,
 }
