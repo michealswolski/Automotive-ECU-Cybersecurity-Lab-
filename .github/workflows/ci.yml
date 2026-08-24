@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Repository checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 is the floor (tomllib landed there); 3.12 is what development
+        # happens on. Both have to work, because the whole point of the
+        # zero-dependency tooling is that it runs on whatever a reviewer has.
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install development tooling
+        run: python -m pip install --upgrade pip pytest ruff
+
+      - name: Consistency rules
+        run: make validate
+
+      - name: Generated documentation blocks are current
+        run: PYTHONPATH=tools/labctl python -m labctl render --check
+
+      - name: SVG assets match their generator
+        run: python tools/assets/render_assets.py --check
+
+      - name: Lint
+        run: make lint
+
+      - name: Tests
+        run: make test
+
+  status:
+    name: Portfolio status
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Surfaced in the job summary so a reviewer can see where the portfolio
+      # stands without cloning anything.
+      - name: Summarise
+        run: |
+          {
+            echo '## Portfolio status'
+            echo
+            echo '```'
+            make status
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

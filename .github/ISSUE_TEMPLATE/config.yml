@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Claim discipline policy
+    url: https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/honest-claims.md
+    about: What this repository claims, what it does not, and the rule that decides.
+  - name: Portfolio
+    url: https://michealswolski.github.io
+    about: The wider security portfolio this lab belongs to.

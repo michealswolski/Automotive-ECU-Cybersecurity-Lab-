@@ -1,0 +1,427 @@
+# Automotive ECU Cybersecurity Lab — repository manifest.
+#
+# This file is the single source of truth for project metadata. The README
+# tables, the docs status pages and the landing site are all generated from it
+# by `tools/labctl`, so a project's summary, status, build order and skill
+# coverage are written down exactly once.
+#
+# Regenerate everything downstream with:  make render
+# Check that nothing has drifted with:    make check
+
+[lab]
+name = "Automotive ECU Cybersecurity Lab"
+owner = "michealswolski"
+repo = "Automotive-ECU-Cybersecurity-Lab-"
+tagline = "Six buildable projects across the automotive product-security lifecycle."
+
+# ---------------------------------------------------------------------------
+# Projects
+#
+# status:
+#   specified   — spec, build plan and acceptance criteria are written; no code
+#   building    — implementation under way, acceptance criteria not all met
+#   built       — every acceptance criterion in ACCEPTANCE.md is checked off
+#
+# Nothing here is allowed to claim `built` while ACCEPTANCE.md still has
+# unchecked boxes; `labctl validate` enforces that.
+# ---------------------------------------------------------------------------
+
+[[project]]
+id = "secure-boot-chain-simulator"
+number = 1
+order = 1
+title = "Secure Boot Chain Simulator"
+status = "specified"
+language = "Python"
+effort = "M"
+summary = """
+A simulated multi-stage boot chain — BootROM to bootloader to application — \
+where each stage cryptographically verifies the next before transferring \
+control, over a hardware root of trust in OTP fuses and an HSM that never \
+releases a private key."""
+centerpiece = """
+An image carrying a valid signature from the legitimate signing key that the \
+chain still refuses to boot, because its security version number sits behind \
+the monotonic counter."""
+covers = [
+  "secure-boot",
+  "chain-of-trust",
+  "hsm-root-of-trust",
+  "anti-rollback",
+  "measured-boot",
+  "pki",
+  "ecc-signatures",
+  "audit-logging",
+]
+consumes = []
+provides = []
+
+[[project]]
+id = "can-secoc-demo"
+number = 2
+order = 2
+title = "CAN Bus SecOC Demo"
+status = "specified"
+language = "Python"
+effort = "M"
+summary = """
+An AUTOSAR Secure Onboard Communication implementation over a virtual CAN bus: \
+AES-128 CMAC authenticators, the standard profiles with truncated MAC and \
+truncated freshness value, receiver-side freshness reconstruction with an \
+acceptance window, and resynchronisation."""
+centerpiece = """
+The same replay attack run twice. Unprotected, the receiver actuates on a \
+stale brake command. SecOC-protected, the identical bytes are rejected, with \
+the freshness window that was searched printed on screen."""
+covers = [
+  "can-bus",
+  "autosar-secoc",
+  "cmac-hmac",
+  "aes",
+  "replay-protection",
+  "freshness-management",
+]
+consumes = ["can-secoc-demo:mac-keys"]
+provides = ["can-secoc-demo:authenticator"]
+
+[[project]]
+id = "ecu-key-lifecycle"
+number = 3
+order = 3
+title = "ECU Key Lifecycle Manager"
+status = "specified"
+language = "Python"
+effort = "L"
+summary = """
+The complete cryptographic key lifecycle for a simulated ECU fleet: generation \
+in a backend HSM, HKDF derivation with per-generation domain separation, a \
+challenge-response provisioning ceremony bound to a single ECU, fleet rotation \
+with an overlap window, signed revocation lists, and a hash-chained audit log \
+over every transition."""
+centerpiece = """
+Tampering with one byte of the audit log live and having the tool name the \
+exact sequence number that broke the chain."""
+covers = [
+  "key-management",
+  "key-derivation",
+  "provisioning",
+  "key-rotation",
+  "revocation",
+  "cryptoperiods",
+  "audit-logging",
+  "pki",
+]
+consumes = []
+provides = ["can-secoc-demo:mac-keys"]
+
+[[project]]
+id = "tara-workbench"
+number = 4
+order = 4
+title = "ISO/SAE 21434 TARA Workbench"
+status = "specified"
+language = "Python"
+effort = "L"
+summary = """
+The Clause 15 TARA workflow run as version-controlled structured data rather \
+than a spreadsheet — item definition through risk treatment, with computed \
+risk determination, a thirteen-rule linter, and bidirectional traceability \
+from any requirement back to the asset it protects."""
+centerpiece = """
+A complete worked TARA for an OTA-capable telematics gateway ECU, committed to \
+the repo, passing its own linter in CI, with requirements that trace to test \
+cases in the other projects."""
+covers = [
+  "iso-21434",
+  "tara",
+  "threat-modeling",
+  "attack-feasibility",
+  "risk-assessment",
+  "security-requirements",
+  "traceability",
+  "un-r155",
+]
+consumes = []
+provides = ["tara-workbench:requirements"]
+
+[[project]]
+id = "ivn-security-lab"
+number = 5
+order = 5
+title = "In-Vehicle Network Security Lab"
+status = "specified"
+language = "Python"
+effort = "L"
+summary = """
+A simulated vehicle network spanning three protocols — LIN sub-bus, CAN-FD \
+backbone, and Automotive Ethernet carrying SOME/IP-SD and DoIP — joined by a \
+gateway ECU with a zone-based firewall, rate limiting, a diagnostic firewall \
+and a threshold anomaly detector."""
+centerpiece = """
+The pivot: compromise a door module on the LIN bus and try to reach the brake \
+ECU. Without zone policy you get all the way. With it you stop at the gateway."""
+covers = [
+  "lin",
+  "can-fd",
+  "automotive-ethernet",
+  "someip",
+  "doip",
+  "uds",
+  "iso-tp",
+  "network-segmentation",
+  "anomaly-detection",
+]
+consumes = ["can-secoc-demo:authenticator", "tara-workbench:requirements"]
+provides = []
+
+[[project]]
+id = "ecu-firmware-validation"
+number = 6
+order = 6
+title = "ECU Firmware Security Validation Pipeline"
+status = "specified"
+language = "C + Python"
+effort = "XL"
+summary = """
+A FreeRTOS application in C on an emulated ARM Cortex-M running a UDS \
+diagnostic server behind an ISO-TP reassembler, with eight deliberately \
+planted and documented vulnerabilities — wrapped in static analysis, \
+sanitizers, coverage-guided fuzzing, SBOM generation and CVE scanning."""
+centerpiece = """
+The tool-comparison matrix: every planted bug against every tool, found or \
+missed, with time-to-first-crash for the fuzzer. One vulnerability is chosen \
+precisely because no automated tool catches it."""
+covers = [
+  "embedded-c",
+  "rtos",
+  "static-analysis",
+  "dynamic-analysis",
+  "fuzzing",
+  "sbom",
+  "cve-scanning",
+  "test-traceability",
+  "uds",
+  "iso-tp",
+]
+consumes = ["tara-workbench:requirements"]
+provides = []
+
+# ---------------------------------------------------------------------------
+# Skills
+#
+# Every id referenced by a project's `covers` list must appear here, and every
+# skill declared here must either be covered by a project or carry
+# `bench_only = true`. `labctl validate` enforces both directions, which is
+# what stops this file from quietly growing claims nothing backs up.
+# ---------------------------------------------------------------------------
+
+[[skill]]
+id = "secure-boot"
+label = "Secure boot"
+group = "Embedded trust"
+[[skill]]
+id = "chain-of-trust"
+label = "Chain of trust"
+group = "Embedded trust"
+[[skill]]
+id = "hsm-root-of-trust"
+label = "HSM / root of trust"
+group = "Embedded trust"
+[[skill]]
+id = "anti-rollback"
+label = "Anti-rollback"
+group = "Embedded trust"
+[[skill]]
+id = "measured-boot"
+label = "Measured boot / attestation"
+group = "Embedded trust"
+[[skill]]
+id = "pki"
+label = "PKI"
+group = "Cryptography"
+[[skill]]
+id = "ecc-signatures"
+label = "ECDSA / Ed25519"
+group = "Cryptography"
+[[skill]]
+id = "aes"
+label = "AES"
+group = "Cryptography"
+[[skill]]
+id = "cmac-hmac"
+label = "CMAC / HMAC"
+group = "Cryptography"
+[[skill]]
+id = "key-management"
+label = "Key management"
+group = "Cryptography"
+[[skill]]
+id = "key-derivation"
+label = "Key derivation (HKDF)"
+group = "Cryptography"
+[[skill]]
+id = "provisioning"
+label = "Provisioning ceremony"
+group = "Cryptography"
+[[skill]]
+id = "key-rotation"
+label = "Key rotation"
+group = "Cryptography"
+[[skill]]
+id = "revocation"
+label = "Revocation"
+group = "Cryptography"
+[[skill]]
+id = "cryptoperiods"
+label = "Cryptoperiods"
+group = "Cryptography"
+[[skill]]
+id = "audit-logging"
+label = "Tamper-evident audit logs"
+group = "Cryptography"
+[[skill]]
+id = "can-bus"
+label = "CAN bus"
+group = "Automotive networking"
+[[skill]]
+id = "can-fd"
+label = "CAN-FD"
+group = "Automotive networking"
+[[skill]]
+id = "lin"
+label = "LIN"
+group = "Automotive networking"
+[[skill]]
+id = "automotive-ethernet"
+label = "Automotive Ethernet"
+group = "Automotive networking"
+[[skill]]
+id = "someip"
+label = "SOME/IP + SD"
+group = "Automotive networking"
+[[skill]]
+id = "doip"
+label = "DoIP"
+group = "Automotive networking"
+[[skill]]
+id = "uds"
+label = "UDS diagnostics"
+group = "Automotive networking"
+[[skill]]
+id = "iso-tp"
+label = "ISO-TP"
+group = "Automotive networking"
+[[skill]]
+id = "autosar-secoc"
+label = "AUTOSAR SecOC"
+group = "Automotive networking"
+[[skill]]
+id = "replay-protection"
+label = "Replay protection"
+group = "Automotive networking"
+[[skill]]
+id = "freshness-management"
+label = "Freshness management"
+group = "Automotive networking"
+[[skill]]
+id = "network-segmentation"
+label = "Zone-based segmentation"
+group = "Automotive networking"
+[[skill]]
+id = "anomaly-detection"
+label = "Anomaly detection"
+group = "Automotive networking"
+[[skill]]
+id = "iso-21434"
+label = "ISO/SAE 21434"
+group = "Product security lifecycle"
+[[skill]]
+id = "tara"
+label = "TARA"
+group = "Product security lifecycle"
+[[skill]]
+id = "threat-modeling"
+label = "Threat modelling"
+group = "Product security lifecycle"
+[[skill]]
+id = "attack-feasibility"
+label = "Attack feasibility rating"
+group = "Product security lifecycle"
+[[skill]]
+id = "risk-assessment"
+label = "Risk determination"
+group = "Product security lifecycle"
+[[skill]]
+id = "security-requirements"
+label = "Cybersecurity requirements"
+group = "Product security lifecycle"
+[[skill]]
+id = "traceability"
+label = "Requirement traceability"
+group = "Product security lifecycle"
+[[skill]]
+id = "un-r155"
+label = "UN R155 evidence"
+group = "Product security lifecycle"
+[[skill]]
+id = "test-traceability"
+label = "Documented test cases"
+group = "Product security lifecycle"
+[[skill]]
+id = "embedded-c"
+label = "Embedded C"
+group = "Firmware engineering"
+[[skill]]
+id = "rtos"
+label = "RTOS (FreeRTOS)"
+group = "Firmware engineering"
+[[skill]]
+id = "static-analysis"
+label = "Static analysis"
+group = "Firmware engineering"
+[[skill]]
+id = "dynamic-analysis"
+label = "Sanitizers"
+group = "Firmware engineering"
+[[skill]]
+id = "fuzzing"
+label = "Coverage-guided fuzzing"
+group = "Firmware engineering"
+[[skill]]
+id = "sbom"
+label = "SBOM generation"
+group = "Firmware engineering"
+[[skill]]
+id = "cve-scanning"
+label = "CVE scanning"
+group = "Firmware engineering"
+
+# Bench skills. No amount of software makes these true, so nothing in this repo
+# claims them. They are listed here so the gap is explicit rather than
+# accidental — see docs/bench-path.md for what it costs to close each one.
+
+[[skill]]
+id = "logic-analyzer"
+label = "Logic analyzer"
+group = "Bench"
+bench_only = true
+[[skill]]
+id = "jtag-swd"
+label = "JTAG / SWD on-target debugging"
+group = "Bench"
+bench_only = true
+[[skill]]
+id = "oscilloscope"
+label = "Oscilloscope"
+group = "Bench"
+bench_only = true
+[[skill]]
+id = "canoe"
+label = "Vector CANoe"
+group = "Bench"
+bench_only = true
+[[skill]]
+id = "real-can-hardware"
+label = "Physical CAN bus / transceivers"
+group = "Bench"
+bench_only = true

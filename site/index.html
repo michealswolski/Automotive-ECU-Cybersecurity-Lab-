@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automotive ECU Cybersecurity Lab</title>
+<meta name="description" content="Six buildable projects across the automotive product-security lifecycle: secure boot, AUTOSAR SecOC, ECU key lifecycle, ISO/SAE 21434 TARA, in-vehicle network defence, and firmware security validation.">
+<meta name="author" content="Micheal Wolski">
+<meta name="color-scheme" content="dark light">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Automotive ECU Cybersecurity Lab">
+<meta property="og:description" content="Six buildable projects across the automotive product-security lifecycle. Simulation-based, and it says so above the fold.">
+<meta property="og:image" content="./assets/hero.svg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A1526'/%3E%3Cpath d='M16 6l7 3v7c0 5-3 8.6-7 10-4-1.4-7-5-7-10V9z' fill='none' stroke='%2322D3EE' stroke-width='2'/%3E%3Cpath d='M12.5 16.2l2.6 2.6 4.6-5' fill='none' stroke='%2334D399' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+<style>
+  /* Palette — light is the default so a bare :root is never theme-dependent. */
+  :root {
+    --bg: #F4F7FB;
+    --bg-2: #FFFFFF;
+    --panel: #FFFFFF;
+    --stroke: #D8E0EA;
+    --stroke-soft: #E7EDF4;
+    --text: #0F172A;
+    --muted: #475569;
+    --dim: #64748B;
+    --cyan: #0891B2;
+    --blue: #2563EB;
+    --green: #059669;
+    --amber: #B45309;
+    --danger: #DC2626;
+    --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 8px 24px rgba(15, 23, 42, .06);
+    --mono: 'SF Mono', 'JetBrains Mono', ui-monospace, Consolas, 'Courier New', monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --radius: 14px;
+    --max: 1180px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #060D1A;
+      --bg-2: #0A1526;
+      --panel: #0B1526;
+      --stroke: #1E293B;
+      --stroke-soft: #172033;
+      --text: #E2E8F0;
+      --muted: #94A3B8;
+      --dim: #64748B;
+      --cyan: #22D3EE;
+      --blue: #3B82F6;
+      --green: #34D399;
+      --amber: #FBBF24;
+      --danger: #F87171;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 18px 44px rgba(0, 0, 0, .45);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+
+  /* ---- Nav ---------------------------------------------------------- */
+  nav {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--stroke-soft);
+  }
+  nav .wrap {
+    display: flex; align-items: center; gap: 26px;
+    height: 58px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav .wrap::-webkit-scrollbar { display: none; }
+  nav .brand {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 2px;
+    color: var(--text); font-weight: 600; white-space: nowrap;
+  }
+  nav .brand span { color: var(--cyan); }
+  nav a.link {
+    font-size: 13.5px; color: var(--muted); white-space: nowrap;
+  }
+  nav a.link:hover { color: var(--text); text-decoration: none; }
+  nav .spacer { flex: 1 1 auto; }
+  nav a.cta {
+    font-size: 13px; font-weight: 600; white-space: nowrap;
+    border: 1px solid var(--stroke); border-radius: 999px;
+    padding: 6px 14px; color: var(--text);
+  }
+  nav a.cta:hover { border-color: var(--cyan); text-decoration: none; }
+
+  /* ---- Hero --------------------------------------------------------- */
+  header { padding: 40px 0 8px; }
+  header picture, header img { display: block; width: 100%; height: auto; }
+
+  .stats {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+    margin: 28px 0 0;
+  }
+  .stat {
+    background: var(--panel); border: 1px solid var(--stroke);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .stat b {
+    display: block; font-size: 26px; line-height: 1.15; letter-spacing: -.5px;
+  }
+  .stat span {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--dim);
+  }
+
+  /* ---- Sections ----------------------------------------------------- */
+  section { padding: 56px 0 8px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--dim); margin: 0 0 10px;
+  }
+  h2 {
+    font-size: clamp(24px, 3.2vw, 32px); line-height: 1.2;
+    letter-spacing: -.6px; margin: 0 0 12px;
+  }
+  h3 { font-size: 18px; margin: 0 0 6px; letter-spacing: -.2px; }
+  .lede { color: var(--muted); max-width: 68ch; margin: 0 0 26px; }
+  p { max-width: 74ch; }
+
+  /* ---- Callout ------------------------------------------------------ */
+  .callout {
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-left: 3px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+  }
+  .callout h3 { color: var(--amber); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ---- Project grid ------------------------------------------------- */
+  .grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  }
+  .card {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius);
+    padding: 22px 22px 20px;
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+    transition: border-color .18s ease, transform .18s ease;
+  }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+  .card:hover { border-color: var(--accent, var(--cyan)); transform: translateY(-2px); }
+  .card::before {
+    content: ""; position: absolute; inset: -1px -1px auto -1px; height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: var(--accent, var(--cyan));
+  }
+  .card .num {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
+    color: var(--accent, var(--cyan)); margin-bottom: 6px;
+  }
+  .card p { font-size: 14.5px; color: var(--muted); margin: 8px 0 0; }
+  .card .demo {
+    font-size: 14px; margin-top: 14px; padding-top: 14px;
+    border-top: 1px dashed var(--stroke); color: var(--text);
+  }
+  .card .demo b { color: var(--accent, var(--cyan)); font-weight: 600; }
+  .card .meta {
+    margin-top: auto; padding-top: 16px;
+    font-family: var(--mono); font-size: 11.5px; color: var(--dim);
+    display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center;
+  }
+  .pill {
+    display: inline-block; border: 1px solid var(--stroke); border-radius: 999px;
+    padding: 2px 9px; font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: .6px; color: var(--muted);
+  }
+
+  /* ---- Map ---------------------------------------------------------- */
+  .map { margin-top: 8px; overflow-x: auto; }
+  .map picture, .map img {
+    display: block; min-width: 720px; width: 100%; height: auto;
+    border-radius: var(--radius);
+  }
+
+  /* ---- Tables ------------------------------------------------------- */
+  .table-scroll { overflow-x: auto; }
+  table {
+    border-collapse: collapse; width: 100%; min-width: 560px;
+    font-size: 14.5px; margin-top: 6px;
+  }
+  th, td {
+    text-align: left; padding: 11px 14px;
+    border-bottom: 1px solid var(--stroke-soft); vertical-align: top;
+  }
+  th {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--dim); font-weight: 600;
+    border-bottom: 1px solid var(--stroke);
+  }
+  td.num, th.num { width: 54px; font-family: var(--mono); color: var(--dim); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ---- Code --------------------------------------------------------- */
+  pre {
+    background: var(--bg-2); border: 1px solid var(--stroke);
+    border-radius: var(--radius); padding: 18px 20px;
+    overflow-x: auto; font-family: var(--mono); font-size: 13px;
+    line-height: 1.75; color: var(--text); margin: 0;
+  }
+  pre .c { color: var(--dim); }
+  pre .p { color: var(--green); }
+  code {
+    font-family: var(--mono); font-size: .92em;
+    background: var(--bg-2); border: 1px solid var(--stroke-soft);
+    border-radius: 5px; padding: 1px 5px;
+  }
+
+  .two-col {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  /* ---- Footer ------------------------------------------------------- */
+  footer {
+    margin-top: 72px; padding: 44px 0 60px;
+    border-top: 1px solid var(--stroke-soft);
+  }
+  footer .links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 18px; }
+  footer p { font-size: 13.5px; color: var(--dim); }
+  footer .tagline {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 2px;
+    color: var(--muted); margin-top: 24px;
+  }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 0 18px; }
+    section { padding: 44px 0 8px; }
+    .card { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="brand">ECU<span>·</span>LAB</span>
+    <a class="link" href="#projects">Projects</a>
+    <a class="link" href="#compose">How they compose</a>
+    <a class="link" href="#order">Build order</a>
+    <a class="link" href="#claims">Claims</a>
+    <span class="spacer"></span>
+    <a class="cta" href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-">View on GitHub&nbsp;↗</a>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <picture>
+      <source media="(max-width: 700px) and (prefers-color-scheme: dark)" srcset="./assets/hero-compact.svg">
+      <source media="(max-width: 700px)" srcset="./assets/hero-compact-light.svg">
+      <source media="(prefers-color-scheme: dark)" srcset="./assets/hero.svg">
+      <img src="./assets/hero-light.svg" alt="Automotive ECU Cybersecurity Lab — six buildable projects covering secure boot, AUTOSAR SecOC, ECU key lifecycle, ISO/SAE 21434 TARA, in-vehicle network defence, and firmware security validation.">
+    </picture>
+
+    <div class="stats">
+      <div class="stat"><b>6</b><span>Projects</span></div>
+      <div class="stat"><b>56</b><span>Core build phases</span></div>
+      <div class="stat"><b>114</b><span>Acceptance criteria</span></div>
+      <div class="stat"><b>5</b><span>Capabilities not claimed</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">What this is</p>
+    <h2>An automotive product-security portfolio, engineered to a specification</h2>
+    <p class="lede">
+      One repository, six projects, each covering a different slice of the lifecycle: threat analysis,
+      secure boot, key management, in-vehicle communication security, network defence, and firmware
+      validation.
+    </p>
+    <p>
+      Each project ships as a complete engineering package before a line of code exists — a technical
+      specification, a phased build plan, and a definition of done that has to pass before the project
+      counts as finished. That is deliberate. Writing the spec first is what separates
+      <em>“I built a thing”</em> from <em>“I engineered a thing to a requirement and can prove it met
+      one.”</em>
+    </p>
+  </div>
+</section>
+
+<section id="claims">
+  <div class="wrap">
+    <div class="callout">
+      <h3>Read this part first</h3>
+      <p>
+        <strong>Everything here is a simulation.</strong> These projects model hardware behaviour in
+        software. They do not touch an ECU, a transceiver, a real HSM, or a vehicle. Nothing here is
+        AUTOSAR-conformant, ISO-certified, independently reviewed, or production-grade.
+      </p>
+      <p>
+        That sentence is at the top on purpose, not buried in a footnote, because the alternative is
+        having an interviewer find the gap themselves. Five capabilities — logic analyzer, JTAG,
+        oscilloscope, CANoe, and physical CAN hardware — need real hardware, so nothing here claims
+        them. The rule is executable: the repository’s own validation tool
+        <strong>fails the build</strong> if a project claims one.
+      </p>
+      <p>
+        <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/honest-claims.md">The full claim-discipline policy&nbsp;↗</a>
+        &nbsp;·&nbsp;
+        <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/bench-path.md">What closing each hardware gap costs&nbsp;↗</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="wrap">
+    <p class="eyebrow">The six projects</p>
+    <h2>Each one has a demo that lands</h2>
+    <p class="lede">
+      Listed in recommended build order. Every project links to its own specification, phased build
+      plan, and interview talking points.
+    </p>
+
+    <div class="grid">
+
+      <article class="card" style="--accent: var(--blue)">
+        <div class="num">PROJECT 01</div>
+        <h3><a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/tree/main/projects/secure-boot-chain-simulator">Secure Boot Chain Simulator</a></h3>
+        <p>
+          BootROM → bootloader → application, each stage cryptographically verifying the next. Hardware
+          root of trust in OTP fuses, an HSM that never releases a private key, monotonic anti-rollback
+          counters, and measured boot with a PCR bank.
+        </p>
+        <p class="demo">
+          <b>The demo that lands.</b> An image with a <em>valid signature from the legitimate signing
+          key</em> that the chain still refuses to boot, because its security version number sits
+          behind the monotonic counter.
+        </p>
+        <div class="meta"><span class="pill">Python</span> 8 phases · 17 criteria · a long weekend</div>
+      </article>
+
+      <article class="card" style="--accent: var(--cyan)">
+        <div class="num">PROJECT 02</div>
+        <h3><a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/tree/main/projects/can-secoc-demo">CAN Bus SecOC Demo</a></h3>
+        <p>
+          AUTOSAR Secure Onboard Communication over a virtual CAN bus: AES-128 CMAC authenticators,
+          truncated MAC and truncated freshness value, receiver-side freshness reconstruction with an
+          acceptance window, and resynchronisation.
+        </p>
+        <p class="demo">
+          <b>The demo that lands.</b> The same replay attack, twice. Unprotected, the receiver actuates
+          on a stale brake command. Protected, the identical bytes are rejected — with the freshness
+          window that was searched printed on screen.
+        </p>
+        <div class="meta"><span class="pill">Python</span> 9 phases · 17 criteria · a long weekend</div>
+      </article>
+
+      <article class="card" style="--accent: var(--green)">
+        <div class="num">PROJECT 03</div>
+        <h3><a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/tree/main/projects/ecu-key-lifecycle">ECU Key Lifecycle Manager</a></h3>
+        <p>
+          The full cryptographic key lifecycle for a simulated fleet: HSM generation, HKDF derivation,
+          a challenge-response provisioning ceremony bound to one ECU, rotation with an overlap window,
+          signed revocation lists, and a hash-chained audit log.
+        </p>
+        <p class="demo">
+          <b>The demo that lands.</b> Tamper with one byte of the audit log, live, and have the tool
+          name the exact sequence number that broke the chain.
+        </p>
+        <div class="meta"><span class="pill">Python</span> 10 phases · 19 criteria · a week of evenings</div>
+      </article>
+
+      <article class="card" style="--accent: var(--amber)">
+        <div class="num">PROJECT 04</div>
+        <h3><a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/tree/main/projects/tara-workbench">ISO/SAE 21434 TARA Workbench</a></h3>
+        <p>
+          The Clause 15 TARA workflow as version-controlled structured data rather than a spreadsheet —
+          computed risk determination, a thirteen-rule linter, and bidirectional traceability from any
+          requirement back to the asset it protects.
+        </p>
+        <p class="demo">
+          <b>The demo that lands.</b> A complete worked TARA for an OTA telematics gateway ECU, passing
+          its own linter in CI, with requirements that trace into the other projects’ test cases.
+        </p>
+        <div class="meta"><span class="pill">Python</span> 9 phases · 17 criteria · a week of evenings</div>
+      </article>
+
+      <article class="card" style="--accent: var(--green)">
+        <div class="num">PROJECT 05</div>
+        <h3><a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/tree/main/projects/ivn-security-lab">In-Vehicle Network Security Lab</a></h3>
+        <p>
+          Three protocols — LIN sub-bus, CAN-FD backbone, Automotive Ethernet with SOME/IP-SD and DoIP —
+          joined by a gateway with a zone-based firewall, diagnostic filter and anomaly detector. Ten
+          attacks, each run permissive versus hardened.
+        </p>
+        <p class="demo">
+          <b>The demo that lands.</b> The pivot: compromise a door module on the LIN bus and try to
+          reach the brake ECU. Without zone policy, all the way. With it, you stop at the gateway.
+        </p>
+        <div class="meta"><span class="pill">Python</span> 10 phases · 22 criteria · a week of evenings</div>
+      </article>
+
+      <article class="card" style="--accent: var(--danger)">
+        <div class="num">PROJECT 06</div>
+        <h3><a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/tree/main/projects/ecu-firmware-validation">ECU Firmware Validation Pipeline</a></h3>
+        <p>
+          FreeRTOS in C on an emulated Cortex-M running a UDS server behind an ISO-TP reassembler, with
+          eight planted and documented vulnerabilities — wrapped in static analysis, sanitizers,
+          coverage-guided fuzzing, SBOM generation and CVE scanning.
+        </p>
+        <p class="demo">
+          <b>The demo that lands.</b> The tool-comparison matrix: every planted bug against every tool,
+          found or missed. One is chosen precisely because <em>nothing</em> catches it.
+        </p>
+        <div class="meta"><span class="pill">C + Python</span> 10 phases · 22 criteria · two weeks of evenings</div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section id="compose">
+  <div class="wrap">
+    <p class="eyebrow">Composition</p>
+    <h2>How the six fit together</h2>
+    <p class="lede">
+      Six unrelated repositories demonstrate six things. Six that hand off to each other demonstrate
+      that you can hold a system in your head. Every arrow below is a hand-off the build specifications
+      actually define — there are no speculative edges.
+    </p>
+
+    <div class="map">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="./assets/portfolio-map.svg">
+        <img src="./assets/portfolio-map-light.svg" alt="Portfolio map. Four bands: analysis, ECU, network, key material. The TARA workbench emits requirement identifiers the projects below trace their tests to; the SecOC authenticator is reused as the in-vehicle network gateway's enforcement point; the key lifecycle manager provisions the MAC keys SecOC consumes.">
+      </picture>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Hand-off</th><th>From → to</th><th>What crosses</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Requirements</strong></td>
+            <td><code>04</code> → all</td>
+            <td>Cybersecurity requirement IDs that tests trace back to. One command prints the chain from a requirement down to the asset it protects.</td>
+          </tr>
+          <tr>
+            <td><strong>Authenticator</strong></td>
+            <td><code>02</code> → <code>05</code></td>
+            <td>The gateway’s SecOC enforcement point reuses the authenticator rather than reimplementing it badly.</td>
+          </tr>
+          <tr>
+            <td><strong>Key material</strong></td>
+            <td><code>03</code> → <code>02</code></td>
+            <td>The lifecycle manager provisions the very MAC keys the SecOC bus consumes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="order">
+  <div class="wrap">
+    <p class="eyebrow">Sequence</p>
+    <h2>Build order</h2>
+    <p class="lede">
+      Not arbitrary. Each position is chosen so the previous project’s output is available when the next
+      one needs it, and so the cheapest credibility comes first.
+    </p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th class="num">#</th><th>Project</th><th>Why here</th><th>Effort</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">1</td><td>Secure Boot Chain Simulator</td><td>Highest credibility per hour, and it stands alone.</td><td>a long weekend</td></tr>
+          <tr><td class="num">2</td><td>CAN Bus SecOC Demo</td><td>The most memorable demo; the authenticator is reused twice later.</td><td>a long weekend</td></tr>
+          <tr><td class="num">3</td><td>ECU Key Lifecycle Manager</td><td>Provisions the MAC keys project 02 consumes — build the bridge.</td><td>a week of evenings</td></tr>
+          <tr><td class="num">4</td><td>ISO/SAE 21434 TARA Workbench</td><td>Needs real requirements to point at, so it wants the first three built.</td><td>a week of evenings</td></tr>
+          <tr><td class="num">5</td><td>In-Vehicle Network Security Lab</td><td>Reuses the SecOC enforcement point; building CAN-FD twice is waste.</td><td>a week of evenings</td></tr>
+          <tr><td class="num">6</td><td>ECU Firmware Validation Pipeline</td><td>The most expensive by far. Do it when the rest are shipping.</td><td>two weeks of evenings</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Try it</p>
+    <h2>Runs thirty seconds after cloning</h2>
+    <p class="lede">
+      The repository tooling is deliberately zero-dependency — Python 3.11+ and nothing else. No
+      virtualenv, no install step, no dependency to resolve.
+    </p>
+
+    <div class="two-col">
+      <pre><span class="c"># clone and look around</span>
+git clone https://github.com/michealswolski/\
+Automotive-ECU-Cybersecurity-Lab-.git
+cd Automotive-ECU-Cybersecurity-Lab-
+
+<span class="p">make status</span>   <span class="c"># specified / building / built</span>
+<span class="p">make check</span>    <span class="c"># every consistency rule + tests</span></pre>
+
+      <pre><span class="c"># build one of the projects</span>
+cd projects/secure-boot-chain-simulator
+claude        <span class="c"># then paste prompts/kickoff.md</span>
+
+<span class="c"># one phase at a time. run the demo after</span>
+<span class="c"># each one. if you can't explain a file,</span>
+<span class="c"># ask about that file before moving on.</span></pre>
+    </div>
+
+    <p style="margin-top:22px">
+      <code>labctl</code> keeps the repository honest about itself: one manifest describes the six
+      projects, every table is rendered from it, and CI fails if any of them drifts — including if a
+      project is marked complete while its own acceptance checklist still has unchecked boxes.
+      <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/tooling.md">How the tooling works&nbsp;↗</a>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-">Repository&nbsp;↗</a>
+      <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/portfolio-map.md">Portfolio map&nbsp;↗</a>
+      <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/glossary.md">Glossary&nbsp;↗</a>
+      <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-/blob/main/docs/honest-claims.md">Honest claims&nbsp;↗</a>
+      <a href="https://michealswolski.github.io">Portfolio&nbsp;↗</a>
+      <a href="https://www.linkedin.com/in/michealwolski">LinkedIn&nbsp;↗</a>
+    </div>
+    <p>
+      Built by <strong>Micheal Wolski</strong>. Background for the automotive work comes from a Product
+      Cybersecurity internship at Bosch Mobility — secure boot research covering chain-of-trust
+      verification and TPM-based attestation. Nothing in this repository contains confidential company
+      information, internal data, source code, or proprietary material. These are independent
+      implementations built from publicly available specifications.
+    </p>
+    <p>MIT licensed.</p>
+    <p class="tagline">TRUST · VERIFY · SHIP</p>
+  </div>
+</footer>
+
+</body>
+</html>

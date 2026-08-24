@@ -1,0 +1,14 @@
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary
+*.bin binary
+
+# Generated — collapse in pull request diffs. Regenerate with `make assets`
+# and `make render` rather than editing by hand.
+assets/*.svg linguist-generated=true
+
+# Documentation-heavy repository; keep the language bar meaningful.
+docs/**            linguist-documentation=true
+projects/*/docs/** linguist-documentation=true
