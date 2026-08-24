@@ -94,7 +94,9 @@ def test_citing_lists_projects_in_display_order(lab_root: Path) -> None:
 def test_unknown_standard_reference_is_reported(lab_root: Path) -> None:
     path = lab_root / "lab.toml"
     path.write_text(
-        path.read_text(encoding="utf-8").replace('standards = ["spec-one"]', 'standards = ["nope"]'),
+        path.read_text(encoding="utf-8").replace(
+            'standards = ["spec-one"]', 'standards = ["nope"]'
+        ),
         encoding="utf-8",
     )
     assert "standard-ref" in rules(validate.run_all(manifest.load(lab_root)))
@@ -136,7 +138,9 @@ def test_a_project_citing_nothing_is_reported(lab_root: Path) -> None:
 def test_non_iso_verified_date_is_reported(lab_root: Path) -> None:
     path = lab_root / "lab.toml"
     path.write_text(
-        path.read_text(encoding="utf-8").replace('verified = "2026-08-24"', 'verified = "recently"'),
+        path.read_text(encoding="utf-8").replace(
+            'verified = "2026-08-24"', 'verified = "recently"'
+        ),
         encoding="utf-8",
     )
     assert "standard-verified" in rules(validate.run_all(manifest.load(lab_root)))
