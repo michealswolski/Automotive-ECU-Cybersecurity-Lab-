@@ -72,7 +72,7 @@ backend and then fails at key generation.** ML-DSA needs an AWS-LC or BoringSSL
 backed build, and most wheels ship OpenSSL.
 
 So `algo.available()` generates a key to find out, rather than reading a version
-number:
+number. On a build whose backend supports it:
 
 ```
 $ secboot algos
@@ -82,7 +82,9 @@ $ secboot algos
   4  ecdsa-p384   available    ECDSA on NIST P-384 with SHA-384 — the CNSA 2.0 classical floor
 ```
 
-If the backend cannot do it, `keygen --algo ml-dsa-65` fails with
+On an OpenSSL-backed wheel the same command prints `unavailable` on that row,
+which is the expected result and not a bug. If the backend cannot do it,
+`keygen --algo ml-dsa-65` fails with
 `ALGO_BACKEND_UNAVAILABLE` and a message naming the cause. It never falls back,
 and it never fabricates a signature.
 
