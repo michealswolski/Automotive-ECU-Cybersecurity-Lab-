@@ -77,3 +77,43 @@ def test_trailing_bytes_are_rejected() -> None:
     """Extra bytes after the signature are a place to hide a payload."""
     result = image.parse(_valid() + b"smuggled", 2)
     assert result.reason is ReasonCode.LENGTH_OVERFLOW
+
+
+@pytest.mark.parametrize("cli_name", ["ecdsa-p256", "ecdsa-p384", "ed25519"])
+def test_signature_length_is_a_constant_per_algorithm(cli_name: str) -> None:
+    """The regression this file gained after a CI failure.
+
+    `sig_len` lives inside the signed header, so it has to be known *before*
+    signing. DER-encoded ECDSA does not oblige: `r` and `s` each gain a 0x00 pad
+    byte whenever their top bit is set, so a P-256 signature is 70, 71 or 72
+    bytes depending on the nonce — a property of the signature, not of the key.
+    The builder originally signed, checked, and re-signed against a corrected
+    header, which converges only by luck and failed on CI at roughly one run in
+    two hundred.
+
+    ADR-0011 re-encodes ECDSA as fixed-width `r || s` instead. Sixty signatures
+    over sixty different messages: under the old encoding the odds of every one
+    landing on the same length are about 1 in 10^19.
+    """
+    from secboot.algo import BY_CLI_NAME, SPECS
+
+    spec = SPECS[BY_CLI_NAME[cli_name]]
+    key = spec.generate()
+    lengths = {len(spec.sign(key, f"message {n}".encode())) for n in range(60)}
+
+    assert lengths == {spec.sig_len}
+
+
+def test_a_fixed_width_signature_still_verifies() -> None:
+    """Re-encoding must not have broken the thing it re-encodes."""
+    from secboot.algo import SPECS, Algo, verify_signature
+
+    spec = SPECS[Algo.ECDSA_P256_SHA256]
+    key = spec.generate()
+    public = spec.public_bytes(key)
+    signature = spec.sign(key, b"payload")
+
+    assert verify_signature(spec, public, signature, b"payload")
+    assert not verify_signature(spec, public, signature, b"payload!")
+    assert not verify_signature(spec, public, signature[:-1], b"payload")
+    assert not verify_signature(spec, public, bytes(len(signature)), b"payload")

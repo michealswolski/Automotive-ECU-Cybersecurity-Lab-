@@ -2,7 +2,7 @@
 
 ![status](https://img.shields.io/badge/status-Built-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
 ![language](https://img.shields.io/badge/lang-Python-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
-![tests](https://img.shields.io/badge/tests-127-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
+![tests](https://img.shields.io/badge/tests-131-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
 ![coverage](https://img.shields.io/badge/coverage-97%25-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
 ![build order](https://img.shields.io/badge/build_order-first-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
 
@@ -191,7 +191,7 @@ secure-boot-chain-simulator/
 │   ├── attacks.py     producing malicious images
 │   ├── demo.py        the nine scenarios
 │   └── cli.py · attack_cli.py · builder.py · render.py · reasons.py
-├── tests/             127 tests, 97% coverage, golden demo output
+├── tests/             131 tests, 97% coverage, golden demo output
 └── docs/              threat model, reason codes, ADRs, standards, PQ
 ```
 

@@ -11,13 +11,6 @@ from .algo import SPECS, Algo
 from .hsm import Hsm
 from .image import RESERVED_LEN, build, signing_preimage
 
-#: How many times to retry when a DER-encoded ECDSA signature comes out a
-#: different length than the header already committed to. `sig_len` lives inside
-#: the signed region, so the length has to be known before signing; for ECDSA it
-#: varies by a byte or two depending on leading zeros, so we sign, check, and
-#: sign again against the corrected header. Converges immediately in practice.
-_MAX_LENGTH_ITERATIONS = 8
-
 
 def sign_and_build(
     hsm: Hsm,
@@ -43,27 +36,27 @@ def sign_and_build(
     key_id = slot if key_id is None else key_id
     pubkey = hsm.public_key(slot)
 
-    sig_len = 0
-    signature = b""
-    for _ in range(_MAX_LENGTH_ITERATIONS):
-        preimage = signing_preimage(
-            stage_id=stage_id,
-            svn=svn,
-            payload=payload,
-            algo_id=int(algo),
-            key_id=key_id,
-            signer_pubkey=pubkey,
-            sig_len=sig_len,
-            image_version=image_version,
-            load_address=load_address,
-            reserved=reserved,
+    # `sig_len` sits inside the signed header, so it has to be known before
+    # signing. Every algorithm in the table has a fixed signature length, which
+    # is exactly why ADR-0011 re-encodes ECDSA away from variable-length DER.
+    sig_len = SPECS[algo].sig_len
+    preimage = signing_preimage(
+        stage_id=stage_id,
+        svn=svn,
+        payload=payload,
+        algo_id=int(algo),
+        key_id=key_id,
+        signer_pubkey=pubkey,
+        sig_len=sig_len,
+        image_version=image_version,
+        load_address=load_address,
+        reserved=reserved,
+    )
+    signature = hsm.sign(slot, preimage)
+    if len(signature) != sig_len:  # pragma: no cover - a backend contract breach
+        raise RuntimeError(
+            f"{SPECS[algo].cli_name} produced a {len(signature)}-byte signature, expected {sig_len}"
         )
-        signature = hsm.sign(slot, preimage)
-        if len(signature) == sig_len:
-            break
-        sig_len = len(signature)
-    else:  # pragma: no cover - would need a signer with unstable output length
-        raise RuntimeError("signature length did not converge")
 
     return build(
         stage_id=stage_id,

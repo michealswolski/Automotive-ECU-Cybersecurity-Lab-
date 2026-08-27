@@ -167,3 +167,36 @@ measured boot is a feature with no demonstrated purpose.
 `secboot-attack` rather than `secboot attack`. Nothing an operator runs can
 produce a malicious image by accident, and a reader looking at the entry points
 in `pyproject.toml` can see which half of the project is the adversary.
+
+---
+
+## ADR-0011 — ECDSA signatures are fixed-width `r || s`, not DER
+
+Added after a CI failure, which is the honest provenance.
+
+`sig_len` lives inside the signed header, so it has to be known *before*
+signing. DER-encoded ECDSA does not oblige: `r` and `s` are encoded as signed
+integers, so each gains a 0x00 pad byte whenever its top bit is set. A P-256
+signature is therefore 70, 71 or 72 bytes — and that is a property of the
+individual signature's nonce, **not** of the key.
+
+The first implementation signed, checked the length, and re-signed against a
+corrected header, up to eight times. That looks like it converges and does not:
+each retry draws a fresh nonce, so it is a coin flip every round, with about a
+0.5% chance of exhausting the retries per call. The local run passed. CI, on the
+same commit, did not — which is exactly the failure mode a local-only green is
+supposed to catch and did not.
+
+The fix re-encodes ECDSA signatures as fixed-width `r || s`, big-endian,
+zero-padded to the curve's coordinate size: 64 bytes for P-256, 96 for P-384.
+`sig_len` becomes a constant per algorithm, the retry loop disappears, and the
+builder asserts the length rather than negotiating it.
+
+This is also the better container design, and consistent with a choice already
+made elsewhere: the public key travels as a raw X9.62 point for the same reason.
+No boot ROM should need an ASN.1 parser to boot, and a fixed-width field is one
+fewer variable-length parse on the path before the signature is checked.
+
+`tests/test_image_roundtrip.py::test_signature_length_is_a_constant_per_algorithm`
+takes sixty signatures over sixty messages. Under DER the odds of all sixty
+landing on one length are about 1 in 10^19.

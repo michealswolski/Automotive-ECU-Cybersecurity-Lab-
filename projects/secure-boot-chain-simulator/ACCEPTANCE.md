@@ -34,7 +34,7 @@ recorded as an ADR rather than left implicit:
 
 - **Python 3.11, not 3.12** — ADR-0001. Nothing here needs a 3.12 feature and the
   repository's floor is 3.11.
-- **`docs/decisions.md` holds ten ADRs**, not five. The counter-advance timing
+- **`docs/decisions.md` holds eleven ADRs**, not five. The counter-advance timing
   tradeoff is ADR-0002.
 - **Container digest stays SHA-256** while signature hashes follow `algo_id` —
   ADR-0005, which is the honest half-answer to the SHA-384 suggestion in
