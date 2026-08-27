@@ -6,7 +6,7 @@ Regenerate with `make render`; CI fails if this page has drifted.
 
 <!-- labctl:begin totals -->
 
-**6 projects · 56 core build phases (7 optional) · 114 acceptance criteria · 0 met so far.**
+**6 projects · 56 core build phases (7 optional) · 114 acceptance criteria · 17 met so far.**
 
 <!-- labctl:end totals -->
 
@@ -14,7 +14,7 @@ Regenerate with `make render`; CI fails if this page has drifted.
 
 | # | Project | Status | Phases | Acceptance | Language |
 |---|---|---|---|---|---|
-| `01` | [Secure Boot Chain Simulator](../projects/secure-boot-chain-simulator) | ◻ Specified | 8 (+2) | 0/17 | Python |
+| `01` | [Secure Boot Chain Simulator](../projects/secure-boot-chain-simulator) | ◼ Built | 8 (+2) | 17/17 | Python |
 | `02` | [CAN Bus SecOC Demo](../projects/can-secoc-demo) | ◻ Specified | 9 (+1) | 0/17 | Python |
 | `03` | [ECU Key Lifecycle Manager](../projects/ecu-key-lifecycle) | ◻ Specified | 10 (+1) | 0/19 | Python |
 | `04` | [ISO/SAE 21434 TARA Workbench](../projects/tara-workbench) | ◻ Specified | 9 (+1) | 0/17 | Python |

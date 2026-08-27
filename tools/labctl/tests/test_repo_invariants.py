@@ -139,6 +139,43 @@ def test_every_ci_check_command_is_recognised(workflow: str) -> None:
     assert len(commands) >= 5, commands
 
 
+def test_every_project_workflow_is_covered_by_that_project_s_makefile(repo_root: Path) -> None:
+    """The same guard, applied to the per-project workflows.
+
+    `ci.yml` runs the zero-dependency repository checks and `make check` covers
+    it. A project with its own dependencies gets its own workflow, and the same
+    rule has to hold there: whatever that workflow runs, the project's own
+    `make check` has to reach, or a contributor's local green means nothing.
+    """
+    for workflow_path in sorted((repo_root / ".github" / "workflows").glob("*.yml")):
+        if workflow_path.name == "ci.yml":
+            continue
+        workflow = workflow_path.read_text(encoding="utf-8")
+        directory = re.search(r"working-directory:\s*(projects/\S+)", workflow)
+        if directory is None:
+            # A workflow with no project working-directory is repo-level
+            # (deployment, reporting) and has no project Makefile to compare
+            # against. `ci.yml` is the repo-level one this rule does cover.
+            continue
+        makefile_path = repo_root / directory.group(1) / "Makefile"
+        assert makefile_path.exists(), (
+            f"{workflow_path.name} points at a directory with no Makefile"
+        )
+
+        makefile = makefile_path.read_text(encoding="utf-8")
+        makefile = _expand(makefile, _makefile_variables(makefile))
+        targets = re.findall(r"^([a-z-]+):", makefile, re.MULTILINE)
+        reachable = "\n".join(_target_block(makefile, name) for name in targets)
+        covered = _salient(reachable) | {t for t in targets}
+
+        for command in _ci_check_commands(workflow):
+            wanted = _salient(command)
+            assert wanted <= covered, (
+                f"{workflow_path.name} runs {command!r}, which "
+                f"{makefile_path} does not: {sorted(wanted - covered)}"
+            )
+
+
 def test_readme_documents_the_make_targets(repo_root: Path, makefile: str) -> None:
     """A target the README advertises has to exist."""
     readme = (repo_root / "README.md").read_text(encoding="utf-8")

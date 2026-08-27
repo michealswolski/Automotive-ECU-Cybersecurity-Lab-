@@ -113,10 +113,19 @@ def readme_projects(lab: Lab, states: dict[str, ProjectState], prefix: str = "./
         phases = f"{state.core_phases} phases"
         if state.optional_phases:
             phases += f" + {state.optional_phases} optional"
-        docs = (
-            f'<a href="{prefix}{project.path}/SPEC.md">spec</a> · '
-            f'<a href="{prefix}{project.path}/BUILD_PLAN.md">build plan</a> · '
+        links = [f'<a href="{prefix}{project.path}/SPEC.md">spec</a>']
+        if project.status == "built":
+            # A finished project leads with its own README; the build plan is
+            # history at that point.
+            links.insert(0, f'<a href="{prefix}{project.path}">readme</a>')
+        else:
+            links.append(f'<a href="{prefix}{project.path}/BUILD_PLAN.md">build plan</a>')
+        links.append(
             f'<a href="{prefix}{project.path}/docs/interview-talking-points.md">talking points</a>'
+        )
+        docs = " · ".join(links)
+        run = (
+            f"\n**Run it.** `{project.run}`\n" if project.status == "built" and project.run else ""
         )
         cards.append(
             f"""<td width="50%" valign="top">
@@ -130,7 +139,7 @@ def readme_projects(lab: Lab, states: dict[str, ProjectState], prefix: str = "./
 {project.summary}
 
 **The demo that lands.** {project.centerpiece}
-
+{run}
 <sub>{phases} · {state.acceptance_total} acceptance criteria · {docs}</sub>
 
 </td>"""
