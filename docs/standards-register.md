@@ -12,11 +12,11 @@ So the register is data, not prose. It lives in `lab.toml`, and `labctl validate
 
 | Standard | Edition to cite | Status | Cited by | Checked |
 |---|---|---|:---:|---|
-| **ISO/SAE 21434** — Road vehicles — Cybersecurity engineering | 2021 (first edition) | ● Current | `04` `06` | 2026-08-24 · report |
+| **ISO/SAE 21434** — Road vehicles — Cybersecurity engineering | 2021 (first edition) | ● Current | `04` `06` | 2026-08-24 · web |
 | **ISO/SAE PAS 8475** — Cybersecurity Assurance Levels (CAL) and Targeted Attack Feasibility (TAF) | PAS, stage 50.20 | ◐ Publication imminent | `04` | 2026-08-24 · web |
-| **UN ECE R155** — Cyber security and cyber security management system | Supplement 3 (in force 10 January 2025) | ● Current | `04` | 2026-08-24 · report |
-| **UN ECE R156** — Software update and software update management system | current series | ● Current | `01` `03` | 2026-08-24 · report |
-| **ISO 24089** — Road vehicles — Software update engineering | 2023 | ● Current | `01` `03` | 2026-08-24 · report |
+| **UN ECE R155** — Cyber security and cyber security management system | Supplement 3 (in force 10 January 2025) | ● Current | `04` | 2026-08-24 · web |
+| **UN ECE R156** — Software update and software update management system | current series | ● Current | `01` `03` | 2026-08-24 · web |
+| **ISO 24089** — Road vehicles — Software update engineering | 2023, with Amd 1:2024 | ● Current | `01` `03` | 2026-08-24 · web |
 | **EU Cyber Resilience Act** — Regulation (EU) 2024/2847 | in force 10 December 2024 | ● Current | `06` | 2026-08-24 · web |
 
 ### Communication
@@ -24,10 +24,10 @@ So the register is data, not prose. It lives in `lab.toml`, and `labctl validate
 | Standard | Edition to cite | Status | Cited by | Checked |
 |---|---|---|:---:|---|
 | **AUTOSAR SecOC** — FO PRS SecOcProtocol / CP SWS SecureOnboardCommunication | R25-11 | ● Current | `02` `05` | 2026-08-24 · web |
-| **ISO 11898-1** — Road vehicles — CAN — Data link layer and physical signalling | 2024 | ● Current | `02` `05` | 2026-08-24 · report |
-| **ISO 15765-2** — Road vehicles — Diagnostic communication over CAN — Transport protocol | 2016 | ● Current | `05` `06` | 2026-08-24 · report |
+| **ISO 11898-1** — Road vehicles — CAN — Data link layer and physical signalling | 2024 | ● Current | `02` `05` | 2026-08-24 · web |
+| **ISO 15765-2** — Road vehicles — Diagnostic communication over CAN — Transport protocol | 2024 | ● Current | `05` `06` | 2026-08-24 · web |
 | **ISO 14229-1** — Road vehicles — Unified Diagnostic Services — Application layer | 2020 | ● Current | `05` `06` | 2026-08-24 · web |
-| **ISO 13400-2** — Road vehicles — Diagnostic communication over IP (DoIP) | 2019 | ● Current | `05` | 2026-08-24 · report |
+| **ISO 13400-2** — Road vehicles — Diagnostic communication over IP (DoIP) | 2025 | ● Current | `05` | 2026-08-24 · web |
 | **LIN 2.2A / ISO 17987** — Local Interconnect Network | LIN 2.2A; ISO 17987 series | ● Current | `05` | 2026-08-24 · report |
 | **IEEE 802.1AE (MACsec)** — Media Access Control Security | current; OPEN Alliance TC17 automotive profile in progress | ● Current | `05` | 2026-08-24 · report |
 
@@ -39,19 +39,19 @@ So the register is data, not prose. It lives in `lab.toml`, and `labctl validate
 | **NIST SP 800-38B** — Recommendation for Block Cipher Modes of Operation: the CMAC Mode | 2005 (updated 2016) | ● Current | `02` | 2026-08-24 · report |
 | **NIST SP 800-57 Part 1** — Recommendation for Key Management: General | Revision 5 (May 2020) | ◐ Revision in draft | `03` | 2026-08-24 · web |
 | **NIST SP 800-130** — A Framework for Designing Cryptographic Key Management Systems | 2013 | ● Current | `03` | 2026-08-24 · report |
-| **NIST SP 800-193** — Platform Firmware Resiliency Guidelines | May 2017 | ● Current | `01` | 2026-08-24 · report |
+| **NIST SP 800-193** — Platform Firmware Resiliency Guidelines | May 2017 | ● Current | `01` | 2026-08-24 · web |
 | **NIST SP 800-208** — Recommendation for Stateful Hash-Based Signature Schemes | 2020 | ● Current | `01` | 2026-08-24 · web |
 | **NSA CNSA 2.0** — Commercial National Security Algorithm Suite 2.0 | May 2025 reissue | ● Current | `01` | 2026-08-24 · web |
 | **FIPS 204** — Module-Lattice-Based Digital Signature Standard (ML-DSA) | finalized August 2024 | ● Current | `01` | 2026-08-24 · web |
-| **SAE J3101** — Hardware Protected Security for Ground Vehicles | J3101_202002 (February 2020) | ● Current | `01` | 2026-08-24 · report |
+| **SAE J3101** — Hardware Protected Security for Ground Vehicles | J3101_202002 (February 2020) | ● Current | `01` | 2026-08-24 · web |
 | **RFC 9162** — Certificate Transparency Version 2.0 | 2021 | ● Current | `03` | 2026-08-24 · report |
 
 ### Firmware quality
 
 | Standard | Edition to cite | Status | Cited by | Checked |
 |---|---|---|:---:|---|
-| **MISRA C:2012** — Guidelines for the use of the C language in critical systems | with AMD1/2/3; 2023 consolidated re-issue | ● Current | `06` | 2026-08-24 · report |
-| **SEI CERT C** — CERT C Coding Standard | current | ● Current | `06` | 2026-08-24 · report |
+| **MISRA C:2023** — Guidelines for the use of the C language in critical systems | consolidates MISRA C:2012 AMD1–AMD4 | ● Current | `06` | 2026-08-24 · web |
+| **SEI CERT C** — CERT C Coding Standard | 2nd Edition | ● Current | `06` | 2026-08-24 · web |
 | **CycloneDX** — SBOM format | current | ● Current | `06` | 2026-08-24 · report |
 | **SPDX** — System Package Data Exchange (ISO/IEC 5962) | ISO/IEC 5962 | ● Current | `06` | 2026-08-24 · report |
 
@@ -74,7 +74,7 @@ So the register is data, not prose. It lives in `lab.toml`, and `labctl validate
 | `03` | [ECU Key Lifecycle Manager](../projects/ecu-key-lifecycle) | NIST SP 800-57 Part 1, NIST SP 800-130, RFC 9162, UN ECE R156, ISO 24089 |
 | `04` | [ISO/SAE 21434 TARA Workbench](../projects/tara-workbench) | ISO/SAE 21434, ISO/SAE PAS 8475, UN ECE R155 |
 | `05` | [In-Vehicle Network Security Lab](../projects/ivn-security-lab) | ISO 11898-1, ISO 15765-2, ISO 14229-1, ISO 13400-2, LIN 2.2A / ISO 17987, IEEE 802.1AE (MACsec), AUTOSAR SecOC |
-| `06` | [ECU Firmware Security Validation Pipeline](../projects/ecu-firmware-validation) | ISO/SAE 21434, ISO 14229-1, ISO 15765-2, MISRA C:2012, SEI CERT C, CycloneDX, SPDX, EU Cyber Resilience Act |
+| `06` | [ECU Firmware Security Validation Pipeline](../projects/ecu-firmware-validation) | ISO/SAE 21434, ISO 14229-1, ISO 15765-2, MISRA C:2023, SEI CERT C, CycloneDX, SPDX, EU Cyber Resilience Act |
 
 <!-- labctl:end project-standards -->
 
@@ -121,7 +121,7 @@ Mandatory in the EU for all new vehicles since 7 July 2024 (new types since July
 
 The update-integrity companion to R155: manufacturers must ensure the integrity and authenticity of software updates and manage software identification (RxSWIN). The natural regulatory hook for anti-rollback and revocation.
 
-**ISO 24089 — 2023**
+**ISO 24089 — 2023, with Amd 1:2024**
 
 The engineering standard underpinning UN R156.
 
@@ -139,17 +139,17 @@ R25-11 was released in December 2025 and is current; R24-11 is the prior release
 
 The 2024 edition also covers CAN XL (data fields to 2048 bytes). Update any reference to the 2015 edition. CAN FD DLC-to-length above 8: 9→12, 10→16, 11→20, 12→24, 13→32, 14→48, 15→64; classic CAN maps DLC 9–15 all to 8.
 
-**ISO 15765-2 — 2016**
+**ISO 15765-2 — 2024**
 
-ISO-TP. Frame types: Single Frame, First Frame, Consecutive Frame, Flow Control. Flow Control carries flow status (CTS / Wait / Overflow), block size and STmin. A reassembler handling attacker-controlled length fields is the right fuzzing target.
+ISO-TP. The fourth edition (April 2024) replaced the 2016 edition — the 2026 validation report names 2016, which is stale. Frame types: Single Frame, First Frame, Consecutive Frame, Flow Control. Flow Control carries flow status (CTS / Wait / Overflow), block size and STmin. A reassembler handling attacker-controlled length fields is the right fuzzing target.
 
 **ISO 14229-1 — 2020**
 
 The 2020 edition introduced service 0x29 Authentication as the modern replacement for 0x27 SecurityAccess: certificate-based PKI (APCE) and symmetric challenge-response (ACR), with optional mutual authentication and session-key derivation; positive response SID 0x69. 0x27 remains in the standard but ISO 15765-4 deprecates it for new designs. A seed/key brute-force scenario is still a valid attack on legacy 0x27 — but 0x29 must appear as the remediation or the project reads as dated.
 
-**ISO 13400-2 — 2019**
+**ISO 13400-2 — 2025**
 
-The 2019 edition added secured (TLS) communication: TCP 13400 unsecured, TLS on 3496. Routing activation sequence and payload types (vehicle ID, routing activation, alive check, diagnostic message, entity status) are as specified. Real-world TLS adoption still lags — do not imply it is universal.
+DoIP. ISO 13400-2:2019 and its Amd 1:2023 are both withdrawn; the 2025 edition is current and carries DoIP protocol version 4 — the 2026 validation report names 2019, which is stale. Secured (TLS) communication arrived in the 2019 edition: TCP 13400 unsecured, TLS on 3496. Real-world TLS adoption still lags — do not imply it is universal.
 
 **LIN 2.2A / ISO 17987 — LIN 2.2A; ISO 17987 series**
 
@@ -203,13 +203,13 @@ The Merkle-tree log model to reference for a tamper-evident audit log. A hash ch
 
 ### Firmware quality
 
-**MISRA C:2012 — with AMD1/2/3; 2023 consolidated re-issue**
+**MISRA C:2023 — consolidates MISRA C:2012 AMD1–AMD4**
 
-Paid standard. No fully free tool can certify MISRA compliance. cppcheck has a MISRA add-on (`--addon=misra`) covering a subset; clang-tidy does not check MISRA at all. Say 'checks a subset of MISRA rules via cppcheck', never 'MISRA compliant' — full compliance needs a commercial tool such as Polyspace, Helix QAC or LDRA.
+Paid standard. MISRA C:2023 is the current consolidated document, rolling up Amendment 2, Technical Corrigendum 2, Amendment 3 and Amendment 4 — the last of which (March 2023) added multithreading and atomics guidance for C11/C18. The 2026 validation report says AMD1/2/3; it is AMD1–4. No fully free tool can certify compliance: cppcheck has a MISRA add-on (`--addon=misra`) covering a subset; clang-tidy does not check MISRA at all. Say 'checks a subset of MISRA rules via cppcheck', never 'MISRA compliant'.
 
-**SEI CERT C — current**
+**SEI CERT C — 2nd Edition**
 
-What the open static-analysis toolchain actually gives you. clang-tidy's `cert-*` check set plus `bugprone-*`, `clang-analyzer-*` and `misc-*` is the honest claim: CERT-C-oriented static analysis.
+What the open static-analysis toolchain actually gives you. clang-tidy's `cert-*` check set plus `bugprone-*`, `clang-analyzer-*` and `misc-*` is the honest claim: CERT-C-oriented static analysis. MISRA C:2023 Addendum 3 maps its guidelines against CERT C 2nd Edition, which is a useful cross-reference when arguing coverage.
 
 **CycloneDX — current**
 

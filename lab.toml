@@ -503,7 +503,7 @@ edition = "2021 (first edition)"
 status = "current"
 group = "Process & regulation"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
 Clause 15 is the TARA clause; Clause 11 is verification & validation. Entered \
 ISO systematic review in July 2026; a second edition is expected to start \
@@ -535,7 +535,7 @@ edition = "Supplement 3 (in force 10 January 2025)"
 status = "current"
 group = "Process & regulation"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
 Mandatory in the EU for all new vehicles since 7 July 2024 (new types since \
 July 2022). Requires a certified CSMS plus per-type approval against the Annex \
@@ -551,7 +551,7 @@ edition = "current series"
 status = "current"
 group = "Process & regulation"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
 The update-integrity companion to R155: manufacturers must ensure the \
 integrity and authenticity of software updates and manage software \
@@ -562,11 +562,11 @@ revocation."""
 id = "iso-24089"
 name = "ISO 24089"
 title = "Road vehicles — Software update engineering"
-edition = "2023"
+edition = "2023, with Amd 1:2024"
 status = "current"
 group = "Process & regulation"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = "The engineering standard underpinning UN R156."
 
 [[standard]]
@@ -610,7 +610,7 @@ edition = "2024"
 status = "current"
 group = "Communication"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
 The 2024 edition also covers CAN XL (data fields to 2048 bytes). Update any \
 reference to the 2015 edition. CAN FD DLC-to-length above 8: 9→12, 10→16, \
@@ -620,16 +620,13 @@ reference to the 2015 edition. CAN FD DLC-to-length above 8: 9→12, 10→16, \
 id = "iso-15765-2"
 name = "ISO 15765-2"
 title = "Road vehicles — Diagnostic communication over CAN — Transport protocol"
-edition = "2016"
+edition = "2024"
 status = "current"
 group = "Communication"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
-ISO-TP. Frame types: Single Frame, First Frame, Consecutive Frame, Flow \
-Control. Flow Control carries flow status (CTS / Wait / Overflow), block size \
-and STmin. A reassembler handling attacker-controlled length fields is the \
-right fuzzing target."""
+ISO-TP. The fourth edition (April 2024) replaced the 2016 edition — the 2026 validation report names 2016, which is stale. Frame types: Single Frame, First Frame, Consecutive Frame, Flow Control. Flow Control carries flow status (CTS / Wait / Overflow), block size and STmin. A reassembler handling attacker-controlled length fields is the right fuzzing target."""
 
 [[standard]]
 id = "iso-14229-1"
@@ -653,16 +650,13 @@ remediation or the project reads as dated."""
 id = "iso-13400-2"
 name = "ISO 13400-2"
 title = "Road vehicles — Diagnostic communication over IP (DoIP)"
-edition = "2019"
+edition = "2025"
 status = "current"
 group = "Communication"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
-The 2019 edition added secured (TLS) communication: TCP 13400 unsecured, TLS \
-on 3496. Routing activation sequence and payload types (vehicle ID, routing \
-activation, alive check, diagnostic message, entity status) are as specified. \
-Real-world TLS adoption still lags — do not imply it is universal."""
+DoIP. ISO 13400-2:2019 and its Amd 1:2023 are both withdrawn; the 2025 edition is current and carries DoIP protocol version 4 — the 2026 validation report names 2019, which is stale. Secured (TLS) communication arrived in the 2019 edition: TCP 13400 unsecured, TLS on 3496. Real-world TLS adoption still lags — do not imply it is universal."""
 
 [[standard]]
 id = "lin-2-2a"
@@ -761,7 +755,7 @@ edition = "May 2017"
 status = "current"
 group = "Cryptography"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
 Current, not withdrawn — the withdrawn item that surfaces in searches is the \
 initial public draft, not the final. Three principles: Protection, Detection, \
@@ -822,7 +816,7 @@ edition = "J3101_202002 (February 2020)"
 status = "current"
 group = "Cryptography"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
 Published, not in development. Defines requirements via fundamental use cases \
 for a hardware protected security environment acting as a gatekeeper for \
@@ -846,33 +840,27 @@ attributable rather than merely detectable."""
 
 [[standard]]
 id = "misra-c-2012"
-name = "MISRA C:2012"
+name = "MISRA C:2023"
 title = "Guidelines for the use of the C language in critical systems"
-edition = "with AMD1/2/3; 2023 consolidated re-issue"
+edition = "consolidates MISRA C:2012 AMD1–AMD4"
 status = "current"
 group = "Firmware quality"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
-Paid standard. No fully free tool can certify MISRA compliance. cppcheck has a \
-MISRA add-on (`--addon=misra`) covering a subset; clang-tidy does not check \
-MISRA at all. Say 'checks a subset of MISRA rules via cppcheck', never 'MISRA \
-compliant' — full compliance needs a commercial tool such as Polyspace, \
-Helix QAC or LDRA."""
+Paid standard. MISRA C:2023 is the current consolidated document, rolling up Amendment 2, Technical Corrigendum 2, Amendment 3 and Amendment 4 — the last of which (March 2023) added multithreading and atomics guidance for C11/C18. The 2026 validation report says AMD1/2/3; it is AMD1–4. No fully free tool can certify compliance: cppcheck has a MISRA add-on (`--addon=misra`) covering a subset; clang-tidy does not check MISRA at all. Say 'checks a subset of MISRA rules via cppcheck', never 'MISRA compliant'."""
 
 [[standard]]
 id = "cert-c"
 name = "SEI CERT C"
 title = "CERT C Coding Standard"
-edition = "current"
+edition = "2nd Edition"
 status = "current"
 group = "Firmware quality"
 verified = "2026-08-24"
-source = "report"
+source = "web"
 note = """
-What the open static-analysis toolchain actually gives you. clang-tidy's \
-`cert-*` check set plus `bugprone-*`, `clang-analyzer-*` and `misc-*` is the \
-honest claim: CERT-C-oriented static analysis."""
+What the open static-analysis toolchain actually gives you. clang-tidy's `cert-*` check set plus `bugprone-*`, `clang-analyzer-*` and `misc-*` is the honest claim: CERT-C-oriented static analysis. MISRA C:2023 Addendum 3 maps its guidelines against CERT C 2nd Edition, which is a useful cross-reference when arguing coverage."""
 
 [[standard]]
 id = "cyclonedx"

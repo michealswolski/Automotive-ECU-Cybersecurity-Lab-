@@ -261,6 +261,12 @@
     color: var(--muted); margin-top: 24px;
   }
 
+  @media (max-width: 700px) {
+    /* The compact hero is drawn on a 400px canvas so its type is legible on a
+       phone. Cap it so a 700px tablet does not scale that canvas up 1.9x. */
+    header picture, header img { max-width: 460px; margin: 0 auto; }
+  }
+
   @media (max-width: 640px) {
     .wrap { padding: 0 18px; }
     section { padding: 44px 0 8px; }

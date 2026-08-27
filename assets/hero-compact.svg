@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="470" viewBox="0 0 760 470" role="img" aria-label="Automotive ECU Cybersecurity Lab — six buildable automotive product-security projects.">
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="440" viewBox="0 0 400 440" role="img" aria-label="Automotive ECU Cybersecurity Lab — six buildable automotive product-security projects.">
   <title>Automotive ECU Cybersecurity Lab</title>
   <defs>
     <linearGradient id="hBg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#050B16"/><stop offset="52%" stop-color="#0A1526"/><stop offset="100%" stop-color="#0F1F35"/></linearGradient>
@@ -12,8 +12,7 @@
     <pattern id="hGrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0v40" fill="none" stroke="#3B82F6" stroke-opacity="0.075" stroke-width="1"/></pattern>
     <filter id="hGlow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     <filter id="hBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="26"/></filter>
-    <clipPath id="hCard"><rect width="760" height="470" rx="20"/></clipPath>
-    <clipPath id="hWaveClip"><rect x="0" y="0" width="216" height="30"/></clipPath>
+    <clipPath id="hCard"><rect width="400" height="440" rx="18"/></clipPath>
   </defs>
   <style>
     .fade{animation:fadeIn .7s ease-out backwards}
@@ -46,98 +45,87 @@
     @keyframes beat{0%,100%{opacity:.35}50%{opacity:.9}}
     @keyframes live{0%,100%{opacity:.35}50%{opacity:1}}
     @keyframes wave{to{transform:translateX(-216px)}}
-    @keyframes scan{0%{transform:translateY(-90px);opacity:1}100%{transform:translateY(560px);opacity:1}}
-    @keyframes climb{0%{opacity:0}100%{opacity:0}}
-    @keyframes reject{0%,58%{opacity:0}66%,92%{opacity:1}100%{opacity:0}}
+    @keyframes scan{{0%{{transform:translateY(-80px);opacity:1}}100%{{transform:translateY(520px);opacity:1}}}}
+    @keyframes climb{{0%{{opacity:0}}100%{{opacity:0}}}}
+    @keyframes reject{{0%,100%{{opacity:0}}}}
     @media (prefers-reduced-motion: reduce){
       .fade,.type,.wipe,.wipe2,.grow,.drift-a,.drift-b,.drift-c,.grid-pan,.scan,.caret,.role,.beat,.live,.wave,.climb,.reject,.flow,.pulse,.tick{animation:none}
     }
   </style>
   <g clip-path="url(#hCard)">
-    <rect width="760" height="470" fill="url(#hBg)"/>
-    <g class="grid-pan"><rect x="-40" y="-40" width="840" height="550" fill="url(#hGrid)"/></g>
+    <rect width="400" height="440" fill="url(#hBg)"/>
+    <g class="grid-pan"><rect x="-40" y="-40" width="480" height="520" fill="url(#hGrid)"/></g>
     <g filter="url(#hBlur)">
-      <circle class="drift-a" cx="90" cy="100" r="130" fill="url(#hOrbC)"/>
-      <circle class="drift-b" cx="660" cy="380" r="140" fill="url(#hOrbG)"/>
+      <circle class="drift-a" cx="60" cy="70" r="110" fill="url(#hOrbC)"/>
+      <circle class="drift-b" cx="350" cy="360" r="120" fill="url(#hOrbG)"/>
     </g>
-    <rect class="scan" x="0" y="0" width="760" height="80" fill="url(#hScan)" opacity="0"/>
+    <rect class="scan" x="0" y="0" width="400" height="70" fill="url(#hScan)" opacity="0"/>
 
-      <g transform="translate(32,46)" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace">
-        <rect x="-14" y="-24" width="360" height="34" rx="9" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
-        <circle cx="2" cy="-7" r="4.1" fill="#FF5F57"/>
-        <circle cx="17" cy="-7" r="4.1" fill="#FEBC2E"/>
-        <circle cx="32" cy="-7" r="4.1" fill="#28C840"/>
-        <text x="52" y="-3" font-size="12.5" fill="#94A3B8">micheal@ecu-lab</text>
-        <text x="0" y="34" font-size="14.5" fill="#34D399">$</text>
-        <g class="type">
-          <text x="14" y="34" font-size="14.5" fill="#E2E8F0">make demo</text>
-        </g>
-        <rect class="caret" x="96.3" y="21" width="8.5" height="17" fill="#22D3EE" opacity="0"/>
-      </g>
-
-    <g class="wipe" transform="translate(32,132)">
-      <text x="0" y="0" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="800" letter-spacing="-0.4" fill="url(#hTitle)" filter="url(#hGlow)">AUTOMOTIVE ECU</text>
-    </g>
-    <g class="wipe2" transform="translate(32,176)">
-      <text x="0" y="0" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="800" letter-spacing="-0.4" fill="url(#hTitle)" filter="url(#hGlow)">CYBERSECURITY LAB</text>
-    </g>
-    <rect class="grow" x="32" y="192" width="240" height="4" rx="2" fill="url(#hRule)"/>
-
-    <g class="fade" style="animation-delay:2.2s">
-      <rect x="32" y="220" width="696" height="62" rx="11" fill="#0B1526" fill-opacity="0.72" stroke="#22D3EE" stroke-opacity="0.28" stroke-width="1"/>
-      <text x="52" y="245" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" fill="#E2E8F0">Six buildable projects across the automotive</text>
-      <text x="52" y="266" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" fill="#E2E8F0">product-security lifecycle.</text>
+    <g transform="translate(30,44)" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace">
+      <rect x="-14" y="-24" width="368" height="32" rx="9" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
+      <circle cx="1" cy="-8" r="3.8" fill="#FF5F57"/>
+      <circle cx="14" cy="-8" r="3.8" fill="#FEBC2E"/>
+      <circle cx="27" cy="-8" r="3.8" fill="#28C840"/>
+      <text x="44" y="-4" font-size="11.5" fill="#94A3B8">micheal@ecu-lab</text>
+      <text x="-2" y="32" font-size="13" fill="#34D399">$</text>
+      <g class="type"><text x="12" y="32" font-size="13" fill="#E2E8F0">make demo</text></g>
     </g>
 
-      <g class="fade" style="animation-delay:2.6s">
-        <rect x="32" y="300" width="108.7" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
-        <circle cx="47" cy="315" r="3" fill="#22D3EE"/>
-        <text x="58" y="320" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">Secure Boot</text>
+    <g class="wipe" transform="translate(16,120)">
+      <text x="0" y="0" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-0.4" fill="url(#hTitle)" filter="url(#hGlow)">AUTOMOTIVE ECU</text>
+    </g>
+    <g class="wipe2" transform="translate(16,155)">
+      <text x="0" y="0" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-0.4" fill="url(#hTitle)" filter="url(#hGlow)">CYBERSECURITY LAB</text>
+    </g>
+    <rect class="grow" x="16" y="168" width="190" height="3.5" rx="2" fill="url(#hRule)"/>
+
+    <g class="fade" style="animation-delay:2.0s">
+      <rect x="16" y="186" width="368" height="50" rx="10" fill="#0B1526" fill-opacity="0.72" stroke="#22D3EE" stroke-opacity="0.28" stroke-width="1"/>
+      <text x="32" y="208" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#E2E8F0">Six buildable projects across the automotive</text>
+      <text x="32" y="226" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#E2E8F0">product-security lifecycle.</text>
+    </g>
+
+      <g class="fade" style="animation-delay:2.4s">
+        <rect x="16" y="250" width="108.7" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
+        <circle cx="31" cy="265" r="3" fill="#22D3EE"/>
+        <text x="42" y="270" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">Secure Boot</text>
       </g>
-      <g class="fade" style="animation-delay:2.69s">
-        <rect x="148.7" y="300" width="65.8" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
-        <circle cx="163.7" cy="315" r="3" fill="#34D399"/>
-        <text x="174.7" y="320" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">SecOC</text>
+      <g class="fade" style="animation-delay:2.49s">
+        <rect x="132.7" y="250" width="65.8" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
+        <circle cx="147.7" cy="265" r="3" fill="#34D399"/>
+        <text x="158.7" y="270" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">SecOC</text>
       </g>
-      <g class="fade" style="animation-delay:2.78s">
-        <rect x="222.5" y="300" width="123.0" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
-        <circle cx="237.5" cy="315" r="3" fill="#3B82F6"/>
-        <text x="248.5" y="320" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">Key Lifecycle</text>
+      <g class="fade" style="animation-delay:2.58s">
+        <rect x="206.5" y="250" width="123.0" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
+        <circle cx="221.5" cy="265" r="3" fill="#3B82F6"/>
+        <text x="232.5" y="270" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">Key Lifecycle</text>
       </g>
-      <g class="fade" style="animation-delay:2.8s">
-        <rect x="32" y="338" width="115.9" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
-        <circle cx="47" cy="353" r="3" fill="#22D3EE"/>
-        <text x="58" y="358" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">TARA / 21434</text>
+      <g class="fade" style="animation-delay:2.58s">
+        <rect x="16" y="288" width="115.9" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
+        <circle cx="31" cy="303" r="3" fill="#22D3EE"/>
+        <text x="42" y="308" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">TARA / 21434</text>
       </g>
-      <g class="fade" style="animation-delay:2.89s">
-        <rect x="155.9" y="338" width="108.7" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
-        <circle cx="170.9" cy="353" r="3" fill="#34D399"/>
-        <text x="181.9" y="358" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">IVN Gateway</text>
+      <g class="fade" style="animation-delay:2.67s">
+        <rect x="139.9" y="288" width="108.7" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
+        <circle cx="154.9" cy="303" r="3" fill="#34D399"/>
+        <text x="165.9" y="308" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">IVN Gateway</text>
       </g>
-      <g class="fade" style="animation-delay:3.0s">
-        <rect x="32" y="376" width="165.9" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
-        <circle cx="47" cy="391" r="3" fill="#3B82F6"/>
-        <text x="58" y="396" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">Firmware Validation</text>
+      <g class="fade" style="animation-delay:2.76s">
+        <rect x="16" y="326" width="165.9" height="30" rx="15" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
+        <circle cx="31" cy="341" r="3" fill="#3B82F6"/>
+        <text x="42" y="346" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0">Firmware Validation</text>
       </g>
 
-    <g class="fade" style="animation-delay:3.1s">
-      <rect x="24" y="412" width="712" height="42" rx="12" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
-      <circle class="live" cx="48" cy="433" r="4.2" fill="#34D399"/>
-      <text x="62" y="438" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="11.5" letter-spacing="1.4" fill="#34D399">6 PROJECTS</text>
-      <line x1="164" y1="422" x2="164" y2="444" stroke="#1E293B" stroke-width="1"/>
-      <text x="180" y="438" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="11.5" fill="#94A3B8">56 phases</text>
-      <line x1="286" y1="422" x2="286" y2="444" stroke="#1E293B" stroke-width="1"/>
-      <text x="302" y="438" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="11.5" fill="#FBBF24">simulation-based</text>
-        <g transform="translate(496,422)">
-          <g clip-path="url(#hWaveClip)">
-            <g class="wave">
-              <path d="M0 22 h12 V8 h16 V22 h10 V8 h8 V22 h20 V8 h12 V22 h14 V8 h18 V22 h10 V8 h14 V22 h16 V8 h10 V22 h16 V8 h12 V22 h8" fill="none" stroke="#22D3EE" stroke-opacity="0.85" stroke-width="1.6"/>
-              <g transform="translate(216,0)"><path d="M0 22 h12 V8 h16 V22 h10 V8 h8 V22 h20 V8 h12 V22 h14 V8 h18 V22 h10 V8 h14 V22 h16 V8 h10 V22 h16 V8 h12 V22 h8" fill="none" stroke="#22D3EE" stroke-opacity="0.85" stroke-width="1.6"/></g>
-            </g>
-          </g>
-          <text x="216" y="2" text-anchor="end" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="9" letter-spacing="2" fill="#64748B">CAN-FD</text>
-        </g>
+    <g class="fade" style="animation-delay:3.0s">
+      <rect x="16" y="366" width="368" height="54" rx="12" fill="#0B1526" fill-opacity="0.72" stroke="#1E293B" stroke-width="1"/>
+      <circle class="live" cx="34" cy="388" r="4" fill="#34D399"/>
+      <text x="46" y="392" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="11" letter-spacing="1.2" fill="#34D399">6 PROJECTS</text>
+      <line x1="142" y1="378" x2="142" y2="398" stroke="#1E293B" stroke-width="1"/>
+      <text x="154" y="392" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="11" fill="#94A3B8">56 phases</text>
+      <line x1="240" y1="378" x2="240" y2="398" stroke="#1E293B" stroke-width="1"/>
+      <text x="252" y="392" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="11" fill="#94A3B8">114 criteria</text>
+      <text x="34" y="411" font-family="'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace" font-size="11" fill="#FBBF24">simulation-based — stated up front</text>
     </g>
   </g>
-  <rect x="1" y="1" width="758" height="468" rx="19" fill="none" stroke="url(#hEdge)" stroke-width="1.6"/>
+  <rect x="1" y="1" width="398" height="438" rx="17" fill="none" stroke="url(#hEdge)" stroke-width="1.4"/>
 </svg>

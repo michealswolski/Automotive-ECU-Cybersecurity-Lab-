@@ -423,6 +423,16 @@ def render_hero(p: Palette) -> str:
 
 
 def render_hero_compact(p: Palette) -> str:
+    """The narrow-viewport hero.
+
+    Deliberately NOT the desktop hero shrunk. A 1280px design scaled into a
+    ~340px phone column renders its 13px labels at under 6px, which nobody can
+    read. So this is drawn on a 400px canvas with type sized *for* that canvas:
+    in a 342px column it renders at 0.85x, keeping every label above 9px.
+
+    The site also caps its width on narrow viewports so it never scales far
+    past 1:1 in the other direction.
+    """
     dot = {"cyan": p.cyan, "green": p.green, "blue": p.blue}
     rows = [
         [("Secure Boot", "cyan"), ("SecOC", "green"), ("Key Lifecycle", "blue")],
@@ -430,63 +440,70 @@ def render_hero_compact(p: Palette) -> str:
         [("Firmware Validation", "blue")],
     ]
     chips = "\n".join(
-        chip_row(32, 300 + i * 38, [(label, dot[k]) for label, k in row], p, 2.6 + i * 0.2)
+        chip_row(16, 250 + i * 38, [(label, dot[k]) for label, k in row], p, 2.4 + i * 0.18)
         for i, row in enumerate(rows)
     )
     aria = "Automotive ECU Cybersecurity Lab — six buildable automotive product-security projects."
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="760" height="470" viewBox="0 0 760 470" role="img" aria-label="{esc(aria)}">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="400" height="440" viewBox="0 0 400 440" role="img" aria-label="{esc(aria)}">
   <title>Automotive ECU Cybersecurity Lab</title>
   <defs>
 {backdrop_defs(p, "h")}
-    <clipPath id="hCard"><rect width="760" height="470" rx="20"/></clipPath>
-    <clipPath id="hWaveClip"><rect x="0" y="0" width="216" height="30"/></clipPath>
+    <clipPath id="hCard"><rect width="400" height="440" rx="18"/></clipPath>
   </defs>
   <style>
 {ANIMATION_CSS}
-    @keyframes scan{{0%{{transform:translateY(-90px);opacity:1}}100%{{transform:translateY(560px);opacity:1}}}}
-    @keyframes climb{{0%{{opacity:0}}100%{{opacity:0}}}}
-    @keyframes reject{{0%,58%{{opacity:0}}66%,92%{{opacity:1}}100%{{opacity:0}}}}
+    @keyframes scan{{{{0%{{{{transform:translateY(-80px);opacity:1}}}}100%{{{{transform:translateY(520px);opacity:1}}}}}}}}
+    @keyframes climb{{{{0%{{{{opacity:0}}}}100%{{{{opacity:0}}}}}}}}
+    @keyframes reject{{{{0%,100%{{{{opacity:0}}}}}}}}
 {REDUCED_MOTION}
   </style>
   <g clip-path="url(#hCard)">
-    <rect width="760" height="470" fill="url(#hBg)"/>
-    <g class="grid-pan"><rect x="-40" y="-40" width="840" height="550" fill="url(#hGrid)"/></g>
+    <rect width="400" height="440" fill="url(#hBg)"/>
+    <g class="grid-pan"><rect x="-40" y="-40" width="480" height="520" fill="url(#hGrid)"/></g>
     <g filter="url(#hBlur)">
-      <circle class="drift-a" cx="90" cy="100" r="130" fill="url(#hOrbC)"/>
-      <circle class="drift-b" cx="660" cy="380" r="140" fill="url(#hOrbG)"/>
+      <circle class="drift-a" cx="60" cy="70" r="110" fill="url(#hOrbC)"/>
+      <circle class="drift-b" cx="350" cy="360" r="120" fill="url(#hOrbG)"/>
     </g>
-    <rect class="scan" x="0" y="0" width="760" height="80" fill="url(#hScan)" opacity="0"/>
+    <rect class="scan" x="0" y="0" width="400" height="70" fill="url(#hScan)" opacity="0"/>
 
-{terminal_bar(32, 46, 360, "micheal@ecu-lab", "make demo", p)}
-
-    <g class="wipe" transform="translate(32,132)">
-      <text x="0" y="0" font-family="{SANS}" font-size="38" font-weight="800" letter-spacing="-0.4" fill="url(#hTitle)" filter="url(#hGlow)">AUTOMOTIVE ECU</text>
+    <g transform="translate(30,44)" font-family="{MONO}">
+      <rect x="-14" y="-24" width="368" height="32" rx="9" fill="{p.panel}" fill-opacity="{p.panel_opacity}" stroke="{p.stroke}" stroke-width="1"/>
+      <circle cx="1" cy="-8" r="3.8" fill="#FF5F57"/>
+      <circle cx="14" cy="-8" r="3.8" fill="#FEBC2E"/>
+      <circle cx="27" cy="-8" r="3.8" fill="#28C840"/>
+      <text x="44" y="-4" font-size="11.5" fill="{p.muted}">micheal@ecu-lab</text>
+      <text x="-2" y="32" font-size="13" fill="{p.green}">$</text>
+      <g class="type"><text x="12" y="32" font-size="13" fill="{p.text}">make demo</text></g>
     </g>
-    <g class="wipe2" transform="translate(32,176)">
-      <text x="0" y="0" font-family="{SANS}" font-size="38" font-weight="800" letter-spacing="-0.4" fill="url(#hTitle)" filter="url(#hGlow)">CYBERSECURITY LAB</text>
-    </g>
-    <rect class="grow" x="32" y="192" width="240" height="4" rx="2" fill="url(#hRule)"/>
 
-    <g class="fade" style="animation-delay:2.2s">
-      <rect x="32" y="220" width="696" height="62" rx="11" fill="{p.panel}" fill-opacity="{p.panel_opacity}" stroke="{p.cyan}" stroke-opacity="0.28" stroke-width="1"/>
-      <text x="52" y="245" font-family="{SANS}" font-size="14.5" fill="{p.text}">Six buildable projects across the automotive</text>
-      <text x="52" y="266" font-family="{SANS}" font-size="14.5" fill="{p.text}">product-security lifecycle.</text>
+    <g class="wipe" transform="translate(16,120)">
+      <text x="0" y="0" font-family="{SANS}" font-size="30" font-weight="800" letter-spacing="-0.4" fill="url(#hTitle)" filter="url(#hGlow)">AUTOMOTIVE ECU</text>
+    </g>
+    <g class="wipe2" transform="translate(16,155)">
+      <text x="0" y="0" font-family="{SANS}" font-size="30" font-weight="800" letter-spacing="-0.4" fill="url(#hTitle)" filter="url(#hGlow)">CYBERSECURITY LAB</text>
+    </g>
+    <rect class="grow" x="16" y="168" width="190" height="3.5" rx="2" fill="url(#hRule)"/>
+
+    <g class="fade" style="animation-delay:2.0s">
+      <rect x="16" y="186" width="368" height="50" rx="10" fill="{p.panel}" fill-opacity="{p.panel_opacity}" stroke="{p.cyan}" stroke-opacity="0.28" stroke-width="1"/>
+      <text x="32" y="208" font-family="{SANS}" font-size="13" fill="{p.text}">Six buildable projects across the automotive</text>
+      <text x="32" y="226" font-family="{SANS}" font-size="13" fill="{p.text}">product-security lifecycle.</text>
     </g>
 
 {chips}
 
-    <g class="fade" style="animation-delay:3.1s">
-      <rect x="24" y="412" width="712" height="42" rx="12" fill="{p.panel}" fill-opacity="{p.panel_opacity}" stroke="{p.stroke}" stroke-width="1"/>
-      <circle class="live" cx="48" cy="433" r="4.2" fill="{p.green}"/>
-      <text x="62" y="438" font-family="{MONO}" font-size="11.5" letter-spacing="1.4" fill="{p.green}">6 PROJECTS</text>
-      <line x1="164" y1="422" x2="164" y2="444" stroke="{p.stroke}" stroke-width="1"/>
-      <text x="180" y="438" font-family="{MONO}" font-size="11.5" fill="{p.muted}">56 phases</text>
-      <line x1="286" y1="422" x2="286" y2="444" stroke="{p.stroke}" stroke-width="1"/>
-      <text x="302" y="438" font-family="{MONO}" font-size="11.5" fill="{p.amber}">simulation-based</text>
-{can_wave(496, 422, p, "CAN-FD")}
+    <g class="fade" style="animation-delay:3.0s">
+      <rect x="16" y="366" width="368" height="54" rx="12" fill="{p.panel}" fill-opacity="{p.panel_opacity}" stroke="{p.stroke}" stroke-width="1"/>
+      <circle class="live" cx="34" cy="388" r="4" fill="{p.green}"/>
+      <text x="46" y="392" font-family="{MONO}" font-size="11" letter-spacing="1.2" fill="{p.green}">6 PROJECTS</text>
+      <line x1="142" y1="378" x2="142" y2="398" stroke="{p.stroke}" stroke-width="1"/>
+      <text x="154" y="392" font-family="{MONO}" font-size="11" fill="{p.muted}">56 phases</text>
+      <line x1="240" y1="378" x2="240" y2="398" stroke="{p.stroke}" stroke-width="1"/>
+      <text x="252" y="392" font-family="{MONO}" font-size="11" fill="{p.muted}">114 criteria</text>
+      <text x="34" y="411" font-family="{MONO}" font-size="11" fill="{p.amber}">simulation-based — stated up front</text>
     </g>
   </g>
-  <rect x="1" y="1" width="758" height="468" rx="19" fill="none" stroke="url(#hEdge)" stroke-width="1.6"/>
+  <rect x="1" y="1" width="398" height="438" rx="17" fill="none" stroke="url(#hEdge)" stroke-width="1.4"/>
 </svg>
 """
 
