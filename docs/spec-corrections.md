@@ -4,7 +4,18 @@ The six specifications were written against the standards landscape as it stood 
 
 Each project also carries its own copy as `CORRECTIONS.md`, and its `CLAUDE.md` points at it — so the corrections reach the build rather than sitting in a document nobody opens.
 
-> **On provenance.** These corrections originate in a 2026 technical validation of the six specs. The load-bearing claims were re-verified against primary and reputable secondary sources on 2026-08-24 before being recorded here; the [standards register](./standards-register.md) marks each row `web` or `report` accordingly. **One correction in the report was itself out of date** — see AUTOSAR below. Treat this page the same way: a snapshot with a date on it, not a permanent truth.
+> **On provenance.** These corrections originate in a 2026 technical validation of the six specs. The load-bearing claims were re-verified against primary and reputable secondary sources on 2026-08-24 before being recorded here; the [standards register](./standards-register.md) marks each row `web` or `report` accordingly. **Four corrections in the report were themselves out of date**, all found by
+re-verification rather than taken on trust:
+
+| The report says | Actually |
+|---|---|
+| AUTOSAR R24-11 is current | **R25-11**, released December 2025 |
+| ISO 15765-2:2016 is current | **ISO 15765-2:2024** — fourth edition, April 2024 |
+| ISO 13400-2:2019 is current | **ISO 13400-2:2025** — 2019 and its Amd 1:2023 are withdrawn |
+| MISRA C:2012 with AMD1/2/3 | **MISRA C:2023**, consolidating AMD1–**AMD4** |
+
+That is the argument for the register in one table: a document that corrects
+stale anchors goes stale itself. Treat this page the same way: a snapshot with a date on it, not a permanent truth.
 
 ---
 
@@ -121,8 +132,8 @@ If nothing else gets fixed, fix these. They are the details an interviewer probe
 - **LIN protected identifier parity**, confirmed: `P0 = ID0 ⊕ ID1 ⊕ ID2 ⊕ ID4` (even parity); `P1 = ¬(ID1 ⊕ ID3 ⊕ ID4 ⊕ ID5)` (odd parity). PID is the 6-bit frame ID in bits 0–5, P0 in bit 6, P1 in bit 7. Classic checksum covers data bytes only (LIN 1.x); enhanced covers PID plus data (LIN 2.x); frame IDs 0x3C–0x3D always use classic.
 - **CAN FD DLC-to-length**, confirmed: DLC 0–8 → 0–8 bytes; 9 → 12, 10 → 16, 11 → 20, 12 → 24, 13 → 32, 14 → 48, 15 → 64. Classic CAN maps DLC 9–15 all to 8.
 - **ISO 11898-1:2024 is the current edition** and now also covers CAN XL. Update any reference to the 2015 edition.
-- **ISO 15765-2:2016** is current for ISO-TP. Frame types: Single Frame, First Frame, Consecutive Frame, Flow Control; FC carries flow status (CTS/Wait/Overflow), block size and STmin.
-- **ISO 13400-2:2019** is current for DoIP; the 2019 edition added secured TLS communication — TCP 13400 unsecured, **TLS on port 3496**.
+- **ISO 15765-2:2024** is current for ISO-TP** — the fourth edition (April 2024) replaced 2016.** Frame types: Single Frame, First Frame, Consecutive Frame, Flow Control; FC carries flow status (CTS/Wait/Overflow), block size and STmin.
+- **ISO 13400-2:2025** is current for DoIP; 2019 and its Amd 1:2023 are withdrawn. Secured TLS arrived in the 2019 edition — TCP 13400 unsecured, **TLS on port 3496**.
 - **UDS: ISO 14229-1:2020 added service 0x29 Authentication.** Feature it. It supports certificate-based PKI (APCE) and symmetric challenge-response (ACR), with optional mutual authentication and session-key derivation; positive response SID 0x69. The seed/key brute-force scenario remains valid as an attack on legacy 0x27 — but **0x29 must be shown as the remediation or the project looks dated.**
 - **MACsec (IEEE 802.1AE)** adoption in vehicles is emerging, not universal. OPEN Alliance TC17 is defining an automotive MACsec/MKA profile, including for 10BASE-T1S — a work in progress. TC8 is the current Automotive Ethernet ECU test specification.
 
@@ -146,7 +157,7 @@ If nothing else gets fixed, fix these. They are the details an interviewer probe
 - **FreeRTOS LTS is at 202604.00-LTS** (released 29 April 2026), also distributed as a CMSIS Pack, with security and critical bug fixes until April 2028. Kernel v11.3.0 adds hardware ports, security hardening and expanded MPU support. Update from any older LTS.
 - **libFuzzer is in maintenance-only mode** (since late 2022). It still works and is fine as a first fuzzer, but for a 2026 project the stronger primary is **AFL++** (active, multi-core, persistent mode, QEMU mode for binary-only targets) or **LibAFL**. Recommendation: AFL++ as primary, keep a libFuzzer harness for portability, and state the maintenance status explicitly — that nuance signals current awareness.
 - **QEMU versus Renode:** Renode is the better fit for a security validation lab because it models multi-node systems, peripherals and sensor buses deterministically and scriptably, which suits fault injection and protocol testing. QEMU is lighter and excellent for single-MCU FreeRTOS demos and CI smoke tests. Name the working targets rather than leaving the choice abstract.
-- **MISRA:** the current edition is MISRA C:2012 with Amendments 1/2/3, plus the 2023 consolidated re-issue. No fully free tool can certify compliance. cppcheck has a MISRA add-on covering a subset; clang-tidy does not check MISRA at all. Be precise: *"cppcheck's MISRA add-on covers many rules; full MISRA compliance requires a commercial tool."*
+- **MISRA:** the current edition is **MISRA C:2023**, which consolidates MISRA C:2012 Amendments 1 through 4 — AMD4 (March 2023) added multithreading and atomics guidance for C11/C18. No fully free tool can certify compliance. cppcheck has a MISRA add-on covering a subset; clang-tidy does not check MISRA at all. Be precise: *"cppcheck's MISRA add-on covers many rules; full MISRA compliance requires a commercial tool."*
 - **Static-analysis tooling status:** cppcheck and clang-tidy are actively maintained; use the `bugprone-*`, `cert-*`, `clang-analyzer-*` and `misc-*` check sets. flawfinder is lightly maintained and pattern-matching only — keep it, but do not overrate it.
 - **SBOM/CRA:** the EU Cyber Resilience Act (Regulation (EU) 2024/2847) legally requires an SBOM in a commonly used, machine-readable format covering at least top-level dependencies. Reporting obligations apply from 11 September 2026; full application 11 December 2027. Type-approved whole vehicles are exempt under Art. 2(2)(c); components, diagnostic and development tools and aftermarket devices are in scope.
 

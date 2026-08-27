@@ -6,8 +6,8 @@ Apply these while building. Full reasoning and provenance: [`docs/spec-correctio
 
 - [ ] **UDS: ISO 14229-1:2020 added service 0x29 Authentication** — and you must feature it. It supports certificate-based PKI (APCE) and symmetric challenge-response (ACR), with optional mutual authentication and session-key derivation; positive response SID 0x69. ISO 15765-4 deprecates 0x27 for new designs. The seed/key brute-force scenario stays as an attack on **legacy 0x27** — but **0x29 must appear as the remediation, or the project looks dated.** This is the single highest-value change here.
 - [ ] **ISO 11898-1:2024 is the current edition** (now also covers CAN XL). Update any reference to the 2015 edition.
-- [ ] **ISO 13400-2:2019 is current for DoIP.** The 2019 edition added secured TLS: TCP 13400 unsecured, **TLS on port 3496**.
-- [ ] **ISO 15765-2:2016** is current for ISO-TP.
+- [ ] **ISO 13400-2:2025 is current for DoIP** — the 2019 edition and its Amd 1:2023 are both withdrawn, and the 2025 edition carries DoIP protocol version 4. Secured TLS arrived in 2019: TCP 13400 unsecured, **TLS on port 3496**.
+- [ ] **ISO 15765-2:2024** is current for ISO-TP — the fourth edition (April 2024) replaced the 2016 edition.
 - [ ] **MACsec is emerging, not universal.** OPEN Alliance TC17 is defining an automotive MACsec/MKA profile including for 10BASE-T1S — a work in progress. Present MACsec as arriving, not as standard practice. TC8 is the current Automotive Ethernet ECU test spec.
 
 ## Confirmed correct — write the KATs against these
@@ -32,4 +32,4 @@ Apply these while building. Full reasoning and provenance: [`docs/spec-correctio
 
 ## Cite
 
-ISO 11898-1:2024 · ISO 15765-2:2016 · ISO 14229-1:2020 · ISO 13400-2:2019 · LIN 2.2A / ISO 17987 · IEEE 802.1AE · AUTOSAR FO R25-11 PRS SecOcProtocol
+ISO 11898-1:2024 · ISO 15765-2:2024 · ISO 14229-1:2020 · ISO 13400-2:2025 · LIN 2.2A / ISO 17987 · IEEE 802.1AE · AUTOSAR FO R25-11 PRS SecOcProtocol

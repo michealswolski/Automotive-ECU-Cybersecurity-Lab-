@@ -275,7 +275,7 @@ Naming ISO/SAE 21434 Clause 15 is a credibility multiplier. Naming AUTOSAR R20-1
 | `03` | [ECU Key Lifecycle Manager](./projects/ecu-key-lifecycle) | NIST SP 800-57 Part 1, NIST SP 800-130, RFC 9162, UN ECE R156, ISO 24089 |
 | `04` | [ISO/SAE 21434 TARA Workbench](./projects/tara-workbench) | ISO/SAE 21434, ISO/SAE PAS 8475, UN ECE R155 |
 | `05` | [In-Vehicle Network Security Lab](./projects/ivn-security-lab) | ISO 11898-1, ISO 15765-2, ISO 14229-1, ISO 13400-2, LIN 2.2A / ISO 17987, IEEE 802.1AE (MACsec), AUTOSAR SecOC |
-| `06` | [ECU Firmware Security Validation Pipeline](./projects/ecu-firmware-validation) | ISO/SAE 21434, ISO 14229-1, ISO 15765-2, MISRA C:2012, SEI CERT C, CycloneDX, SPDX, EU Cyber Resilience Act |
+| `06` | [ECU Firmware Security Validation Pipeline](./projects/ecu-firmware-validation) | ISO/SAE 21434, ISO 14229-1, ISO 15765-2, MISRA C:2023, SEI CERT C, CycloneDX, SPDX, EU Cyber Resilience Act |
 
 <!-- labctl:end project-standards -->
 
