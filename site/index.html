@@ -203,6 +203,11 @@
     padding: 2px 9px; font-family: var(--mono); font-size: 10.5px;
     letter-spacing: .6px; color: var(--muted);
   }
+  /* A project that is no longer only a specification. Colour comes from the
+     card's own accent so the grid keeps reading as one set. */
+  .pill.built {
+    border-color: var(--accent); color: var(--accent);
+  }
 
   /* ---- Map ---------------------------------------------------------- */
   .map { margin-top: 8px; overflow-x: auto; }
@@ -376,7 +381,10 @@
           key</em> that the chain still refuses to boot, because its security version number sits
           behind the monotonic counter.
         </p>
-        <div class="meta"><span class="pill">Python</span> 8 phases · 17 criteria · a long weekend</div>
+        <div class="meta">
+          <span class="pill built">BUILT</span>
+          <span class="pill">Python</span> 17/17 criteria · 127 tests · 97% coverage
+        </div>
       </article>
 
       <article class="card" style="--accent: var(--cyan)">

@@ -31,9 +31,10 @@ id = "secure-boot-chain-simulator"
 number = 1
 order = 1
 title = "Secure Boot Chain Simulator"
-status = "specified"
+status = "built"
 language = "Python"
 effort = "M"
+run = "cd projects/secure-boot-chain-simulator && make setup && make demo"
 summary = """
 A simulated multi-stage boot chain — BootROM to bootloader to application — \
 where each stage cryptographically verifies the next before transferring \

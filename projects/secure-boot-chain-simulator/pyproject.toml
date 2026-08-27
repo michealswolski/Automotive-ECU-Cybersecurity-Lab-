@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "secboot"
+version = "1.0.0"
+description = "A simulated automotive secure boot chain: BootROM to bootloader to application"
+readme = "README.md"
+license = { text = "MIT" }
+# 3.11 rather than the 3.12 in SPEC.md: nothing here needs a 3.12 feature, and
+# the surrounding repository's toolchain and CI floor is 3.11. Recorded as
+# ADR-0001 in docs/decisions.md.
+requires-python = ">=3.11"
+dependencies = [
+    "cryptography>=42",
+    "typer>=0.12",
+    "rich>=13",
+]
+
+[project.optional-dependencies]
+# Post-quantum signing. `cryptography` exposes ML-DSA (FIPS 204) from 47.0.0 as
+# `hazmat.primitives.asymmetric.mldsa`, but only over an AWS-LC or BoringSSL
+# backend -- an OpenSSL-backed wheel imports the module and then raises at key
+# generation. So this extra is necessary but not sufficient, and secboot probes
+# at runtime rather than trusting the version number. See docs/post-quantum.md.
+pq = ["cryptography>=48"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "mypy>=1.10"]
+
+[project.scripts]
+secboot = "secboot.cli:main"
+secboot-attack = "secboot.attack_cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/secboot"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/secboot"]

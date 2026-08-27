@@ -68,7 +68,7 @@ Every project carries its own version of this section:
 
 | Project | Its specific limit |
 |---|---|
-| [`01` Secure Boot Chain Simulator](../projects/secure-boot-chain-simulator) | Models hardware behaviour; does not touch hardware. The HSM is an object, the fuses are a file. |
+| [`01` Secure Boot Chain Simulator](../projects/secure-boot-chain-simulator) | Models hardware behaviour; does not touch hardware. The HSM is an object, the fuses are a file. The fault-injection scenario is a flag that forces one comparison to pass — it demonstrates what a glitch would *achieve*, and is not glitching. |
 | [`02` CAN Bus SecOC Demo](../projects/can-secoc-demo) | Implements the publicly specified profiles. Not AUTOSAR-conformant, not certified, not a production stack. |
 | [`03` ECU Key Lifecycle Manager](../projects/ecu-key-lifecycle) | A simulation of a key management system, not a KMS. The simulated HSM provides no hardware guarantees. |
 | [`04` TARA Workbench](../projects/tara-workbench) | Reproduces none of ISO/SAE 21434's text. Scoring thresholds are documented conventions. One person's analysis is one person's opinion, structured. |

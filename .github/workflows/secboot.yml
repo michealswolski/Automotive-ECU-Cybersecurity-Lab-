@@ -1,0 +1,65 @@
+name: Project 01 — Secure Boot Chain Simulator
+
+# The repository-wide `ci.yml` deliberately has no third-party dependencies, so
+# it cannot run a project that needs `cryptography`. This workflow is that
+# project's own gate, and `make -C projects/secure-boot-chain-simulator check`
+# is exactly what it runs.
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "projects/secure-boot-chain-simulator/**"
+      - ".github/workflows/secboot.yml"
+  pull_request:
+    paths:
+      - "projects/secure-boot-chain-simulator/**"
+      - ".github/workflows/secboot.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: secboot-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: projects/secure-boot-chain-simulator
+
+jobs:
+  check:
+    name: Checks
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: make setup
+
+      - name: Lint and format
+        run: make lint
+
+      - name: Types
+        run: make types
+
+      - name: Tests
+        run: make test
+
+      # The demo is a deliverable, so it has to keep working end to end -- not
+      # only under pytest, but through the entry point a reader will actually
+      # type. ACCEPTANCE.md requires it to finish with no network access.
+      - name: Demo
+        run: make demo

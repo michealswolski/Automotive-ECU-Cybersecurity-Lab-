@@ -96,6 +96,11 @@ class Project:
     effort: str
     summary: str
     centerpiece: str
+    #: The one command that runs a finished project's demo. Only meaningful
+    #: once `status` is "built"; blank until then, because advertising a
+    #: command that does not work yet is exactly the drift this tooling exists
+    #: to prevent.
+    run: str = ""
     covers: tuple[str, ...] = ()
     standards: tuple[str, ...] = ()
     consumes: tuple[str, ...] = ()
@@ -230,6 +235,7 @@ def load(root: Path | str = ".") -> Lab:
                 effort=str(_require(entry, "effort", where)),
                 summary=_clean(str(_require(entry, "summary", where))),
                 centerpiece=_clean(str(_require(entry, "centerpiece", where))),
+                run=str(entry.get("run", "")),
                 covers=tuple(entry.get("covers", ())),
                 standards=tuple(entry.get("standards", ())),
                 consumes=tuple(entry.get("consumes", ())),

@@ -35,7 +35,7 @@ Each project ships as a complete engineering package before a line of code exist
 
 <!-- labctl:begin totals -->
 
-**6 projects · 56 core build phases (7 optional) · 114 acceptance criteria · 0 met so far.**
+**6 projects · 56 core build phases (7 optional) · 114 acceptance criteria · 17 met so far.**
 
 <!-- labctl:end totals -->
 
@@ -98,7 +98,7 @@ Closing those gaps costs roughly $100 of hardware and a Saturday, and [`docs/ben
 
 ### `01` [Secure Boot Chain Simulator](./projects/secure-boot-chain-simulator)
 
-![status](https://img.shields.io/badge/status-Specified-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
+![status](https://img.shields.io/badge/status-Built-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
 ![language](https://img.shields.io/badge/lang-Python-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
 ![effort](https://img.shields.io/badge/effort-a_long_weekend-0A1526?style=flat-square&labelColor=0A1526&color=0F1F35)
 
@@ -106,7 +106,9 @@ A simulated multi-stage boot chain — BootROM to bootloader to application — 
 
 **The demo that lands.** An image carrying a valid signature from the legitimate signing key that the chain still refuses to boot, because its security version number sits behind the monotonic counter.
 
-<sub>8 phases + 2 optional · 17 acceptance criteria · <a href="./projects/secure-boot-chain-simulator/SPEC.md">spec</a> · <a href="./projects/secure-boot-chain-simulator/BUILD_PLAN.md">build plan</a> · <a href="./projects/secure-boot-chain-simulator/docs/interview-talking-points.md">talking points</a></sub>
+**Run it.** `cd projects/secure-boot-chain-simulator && make setup && make demo`
+
+<sub>8 phases + 2 optional · 17 acceptance criteria · <a href="./projects/secure-boot-chain-simulator">readme</a> · <a href="./projects/secure-boot-chain-simulator/SPEC.md">spec</a> · <a href="./projects/secure-boot-chain-simulator/docs/interview-talking-points.md">talking points</a></sub>
 
 </td>
 <td width="50%" valign="top">
@@ -313,7 +315,7 @@ Each project's `ACCEPTANCE.md` is its definition of done. This table is generate
 
 | # | Project | Status | Phases | Acceptance | Language |
 |---|---|---|---|---|---|
-| `01` | [Secure Boot Chain Simulator](./projects/secure-boot-chain-simulator) | ◻ Specified | 8 (+2) | 0/17 | Python |
+| `01` | [Secure Boot Chain Simulator](./projects/secure-boot-chain-simulator) | ◼ Built | 8 (+2) | 17/17 | Python |
 | `02` | [CAN Bus SecOC Demo](./projects/can-secoc-demo) | ◻ Specified | 9 (+1) | 0/17 | Python |
 | `03` | [ECU Key Lifecycle Manager](./projects/ecu-key-lifecycle) | ◻ Specified | 10 (+1) | 0/19 | Python |
 | `04` | [ISO/SAE 21434 TARA Workbench](./projects/tara-workbench) | ◻ Specified | 9 (+1) | 0/17 | Python |

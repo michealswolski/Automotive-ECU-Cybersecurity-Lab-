@@ -140,3 +140,32 @@ def test_docs_blocks_link_back_out_of_the_docs_directory(lab_root: Path) -> None
     body = (docs / "status.md").read_text(encoding="utf-8")
     assert "(../projects/alpha)" in body
     assert "(./projects/alpha)" not in body
+
+
+def test_a_built_project_advertises_its_run_command(lab_root: Path) -> None:
+    """A finished project's card leads with how to run it, and links its own
+    README rather than the build plan — which is history by then."""
+    path = lab_root / "lab.toml"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            'status = "specified"',
+            'status = "building"\nrun = "make demo"',
+            1,
+        ),
+        encoding="utf-8",
+    )
+    lab = manifest.load(lab_root)
+    states = inspect.inspect_all(lab_root, lab.projects)
+
+    building = render.readme_projects(lab, states)
+    assert "**Run it.**" not in building, "a command is only advertised once it works"
+    assert "build plan" in building
+
+    path.write_text(
+        path.read_text(encoding="utf-8").replace('status = "building"', 'status = "built"', 1),
+        encoding="utf-8",
+    )
+    lab = manifest.load(lab_root)
+    built = render.readme_projects(lab, inspect.inspect_all(lab_root, lab.projects))
+    assert "**Run it.** `make demo`" in built
+    assert "readme</a>" in built

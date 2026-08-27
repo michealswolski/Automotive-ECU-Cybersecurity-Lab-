@@ -30,7 +30,7 @@ Zero third-party dependencies. `tomllib` has been in the standard library since 
 
 **`[lab]`** — the repository's name, owner and tagline.
 
-**`[[project]]`** — one entry per project: id, display number, build order, title, status, language, effort, a summary, the centerpiece demo, the capabilities it covers, and the bridges it consumes and provides.
+**`[[project]]`** — one entry per project: id, display number, build order, title, status, language, effort, a summary, the centerpiece demo, the capabilities it covers, the bridges it consumes and provides, and — once the project is built — the one command that runs its demo.
 
 **`[[skill]]`** — every capability the portfolio either demonstrates or explicitly does not. Bench-only skills carry `bench_only = true`.
 
