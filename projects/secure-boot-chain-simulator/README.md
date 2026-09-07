@@ -24,6 +24,8 @@ make demo       # nine scenarios, ~3 seconds, no network
 
 Nine attacks, each caught by a different control, each printing the reason code and the rule that fired. Full captured output: [`docs/demo-output.md`](./docs/demo-output.md).
 
+**Watch it happen**: [`site/visualizer.html`](./site/visualizer.html) is a self-contained page — open it directly, no server, no build step — that steps through the real audit log each scenario produces: the boot-chain diagram lighting up stage by stage, the PCR bank extending, and the hash-chained ledger, including the exact record an attacker edits in scenario 8 and the exact one where the chain then fails to verify. It is generated from a live run by `tools/export_trace.py`; regenerate it with `make visualize` after any change to `demo.py` or the verifier.
+
 Two of the nine are the reason the project exists.
 
 **The downgrade.** An image signed by the *legitimate* key, refused anyway:

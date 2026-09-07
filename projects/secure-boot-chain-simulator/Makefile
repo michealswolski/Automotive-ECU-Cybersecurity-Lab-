@@ -26,6 +26,14 @@ setup: ## Install runtime and development dependencies
 demo: ## The eight scenarios, narrated
 	@$(SECBOOT) demo
 
+.PHONY: visualize
+visualize: ## Regenerate site/visualizer.html from a live run
+	@PYTHONPATH=src $(PYTHON) tools/export_trace.py
+
+.PHONY: visualize-check
+visualize-check: ## Verify site/visualizer.html matches a live run
+	@PYTHONPATH=src $(PYTHON) tools/export_trace.py --check
+
 .PHONY: lint
 lint: ## Lint and format-check
 	@$(PYTHON) -m ruff check src tests

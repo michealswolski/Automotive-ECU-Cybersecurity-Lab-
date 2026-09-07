@@ -1,0 +1,2819 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secure Boot Chain — Trace Visualizer</title>
+<meta name="description" content="Step through the secure boot chain simulator's nine attack scenarios using its real, hash-chained audit log — which control caught what, and why.">
+<meta name="color-scheme" content="dark light">
+<style>
+  :root {
+    --bg: #F4F7FB;
+    --panel: #FFFFFF;
+    --panel-2: #FAFCFF;
+    --stroke: #D8E0EA;
+    --stroke-soft: #E7EDF4;
+    --text: #0F172A;
+    --muted: #475569;
+    --dim: #64748B;
+    --cyan: #0891B2;
+    --blue: #2563EB;
+    --green: #059669;
+    --amber: #B45309;
+    --danger: #DC2626;
+    --pending: #94A3B8;
+    --mono: 'SF Mono', 'JetBrains Mono', ui-monospace, Consolas, 'Courier New', monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #060D1A;
+      --panel: #0B1526;
+      --panel-2: #0E1A30;
+      --stroke: #1E293B;
+      --stroke-soft: #172033;
+      --text: #E2E8F0;
+      --muted: #94A3B8;
+      --dim: #64748B;
+      --cyan: #22D3EE;
+      --blue: #3B82F6;
+      --green: #34D399;
+      --amber: #FBBF24;
+      --danger: #F87171;
+      --pending: #475569;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, .mono { font-family: var(--mono); }
+  a { color: var(--cyan); }
+
+  header.top {
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid var(--stroke-soft);
+  }
+  header.top h1 { margin: 0 0 4px; font-size: 20px; }
+  header.top p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 72ch; }
+  header.top .disclaimer {
+    margin-top: 10px; font-size: 12.5px; color: var(--dim);
+    border-left: 3px solid var(--amber); padding-left: 10px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 0;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* ---- Scenario rail ---- */
+  nav.rail {
+    border-right: 1px solid var(--stroke-soft);
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    padding: 10px;
+  }
+  @media (max-width: 880px) { nav.rail { max-height: none; border-right: none; border-bottom: 1px solid var(--stroke-soft); } }
+  .scenario-btn {
+    display: block; width: 100%; text-align: left;
+    background: transparent; border: 1px solid transparent; border-radius: var(--radius);
+    padding: 10px 12px; margin-bottom: 6px; cursor: pointer; color: var(--text);
+    font-family: var(--sans);
+  }
+  .scenario-btn:hover { background: var(--panel-2); }
+  .scenario-btn.active { background: var(--panel-2); border-color: var(--stroke); }
+  .scenario-btn .num { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .scenario-btn .title { display: block; font-size: 13.5px; font-weight: 600; margin: 2px 0 4px; }
+  .scenario-btn .attack { display: block; font-size: 12px; color: var(--muted); }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 10.5px; font-weight: 700;
+    padding: 1px 7px; border-radius: 999px; margin-top: 6px; letter-spacing: .03em;
+  }
+  .badge.pass { color: var(--green); background: color-mix(in srgb, var(--green) 14%, transparent); }
+  .badge.fail { color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, transparent); }
+
+  /* ---- Main panel ---- */
+  main { padding: 20px 24px 60px; min-width: 0; }
+  section { margin-bottom: 22px; }
+  h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim);
+    margin: 0 0 10px;
+  }
+
+  .scenario-head { margin-bottom: 18px; }
+  .scenario-head h3 { margin: 0 0 6px; font-size: 18px; }
+  .scenario-head .meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12.5px; color: var(--muted); }
+  .scenario-head .meta strong { color: var(--text); font-weight: 600; }
+
+  /* ---- Chain diagram ---- */
+  .chain {
+    display: flex; align-items: center; gap: 4px; overflow-x: auto; padding: 6px 2px 14px;
+  }
+  .node {
+    flex: 0 0 auto; width: 200px; border: 1.5px solid var(--stroke); border-radius: var(--radius);
+    background: var(--panel); padding: 12px; transition: border-color .2s, background .2s;
+  }
+  .node .label { font-size: 12px; color: var(--dim); display: flex; align-items: center; gap: 6px; }
+  .node .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--pending); flex: 0 0 auto; }
+  .node .name { font-size: 14.5px; font-weight: 700; margin: 3px 0 6px; }
+  .node .detail { font-size: 11px; color: var(--muted); font-family: var(--mono); overflow-wrap: anywhere; min-height: 14px; }
+  .node.pass { border-color: var(--green); background: color-mix(in srgb, var(--green) 6%, var(--panel)); }
+  .node.pass .dot { background: var(--green); }
+  .node.fail { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 6%, var(--panel)); }
+  .node.fail .dot { background: var(--danger); }
+  .node.active .dot { background: var(--cyan); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 25%, transparent); }
+  .arrow { flex: 0 0 auto; color: var(--dim); font-size: 18px; padding: 0 2px; }
+
+  .outcome-banner {
+    margin-top: 4px; padding: 10px 14px; border-radius: var(--radius); font-size: 13.5px;
+    border: 1px solid var(--stroke); background: var(--panel-2);
+  }
+  .outcome-banner.pass { border-color: var(--green); color: var(--green); }
+  .outcome-banner.fail { border-color: var(--danger); color: var(--danger); }
+  .outcome-banner .why { color: var(--muted); font-weight: 400; }
+
+  /* ---- PCR bank ---- */
+  .pcrs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .pcr {
+    border: 1px solid var(--stroke); border-radius: var(--radius); padding: 10px 12px;
+    background: var(--panel); transition: border-color .2s, box-shadow .2s;
+  }
+  .pcr.hot { border-color: var(--cyan); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 18%, transparent); }
+  .pcr .idx { font-family: var(--mono); font-size: 11px; color: var(--cyan); font-weight: 700; }
+  .pcr .purpose { font-size: 11.5px; color: var(--muted); margin: 2px 0 6px; }
+  .pcr .hex { font-family: var(--mono); font-size: 11px; color: var(--text); word-break: break-all; opacity: .85; }
+
+  /* ---- Timeline ---- */
+  .timeline-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .timeline-controls button {
+    font-family: var(--mono); font-size: 12px; border: 1px solid var(--stroke); background: var(--panel);
+    color: var(--text); border-radius: 8px; padding: 6px 10px; cursor: pointer;
+  }
+  .timeline-controls button:hover { border-color: var(--cyan); }
+  .timeline-controls button:disabled { opacity: .4; cursor: not-allowed; }
+  .timeline-controls input[type=range] { flex: 1 1 auto; accent-color: var(--cyan); }
+  .timeline-controls .step-label { font-family: var(--mono); font-size: 11.5px; color: var(--dim); min-width: 64px; text-align: right; }
+
+  .event-card {
+    border: 1px solid var(--stroke); border-radius: var(--radius); background: var(--panel);
+    padding: 14px 16px;
+  }
+  .event-card .row1 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .decision-pill {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px;
+  }
+  .decision-pill.ACCEPT, .decision-pill.PASS { color: var(--green); background: color-mix(in srgb, var(--green) 16%, transparent); }
+  .decision-pill.REJECT, .decision-pill.HALT { color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); }
+  .decision-pill.INFO { color: var(--blue); background: color-mix(in srgb, var(--blue) 16%, transparent); }
+  .event-card .stage-event { font-family: var(--mono); font-size: 13px; }
+  .event-card .reason { font-size: 13px; margin-bottom: 6px; }
+  .event-card .reason code { color: var(--cyan); }
+  .event-card .explain { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+  .event-card details { font-size: 12px; }
+  .event-card summary { cursor: pointer; color: var(--dim); }
+  .event-card pre {
+    margin: 8px 0 0; font-family: var(--mono); font-size: 11.5px; white-space: pre-wrap; word-break: break-all;
+    background: var(--panel-2); border: 1px solid var(--stroke-soft); border-radius: 8px; padding: 8px 10px;
+  }
+
+  /* ---- Audit ledger ---- */
+  .ledger { display: flex; flex-direction: column; gap: 3px; max-height: 260px; overflow-y: auto; }
+  .ledger-row {
+    display: grid; grid-template-columns: 34px 70px 1fr auto; gap: 8px; align-items: center;
+    font-family: var(--mono); font-size: 11.5px; padding: 5px 8px; border-radius: 6px;
+    border: 1px solid transparent; cursor: pointer; color: var(--muted);
+  }
+  .ledger-row:hover { background: var(--panel-2); }
+  .ledger-row.current { border-color: var(--cyan); background: var(--panel-2); color: var(--text); }
+  .ledger-row .seq { color: var(--dim); }
+  .ledger-row .hash { opacity: .7; }
+  .ledger-row.broken { color: var(--danger); }
+  .ledger-row.broken .hash::after { content: " ⚠ chain break"; }
+
+  footer {
+    padding: 18px 24px 40px; font-size: 12px; color: var(--dim); border-top: 1px solid var(--stroke-soft);
+  }
+  footer a { color: var(--cyan); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Secure Boot Chain — Trace Visualizer</h1>
+  <p>
+    Nine attacks against a simulated ECU, replayed from the project's own tamper-evident audit log —
+    not a re-implementation, the actual output of <code class="mono">make demo</code>. Pick a scenario,
+    then step through what each control saw and decided.
+  </p>
+  <p class="disclaimer">
+    A simulation, for education and demonstration. It models the controls; it does not protect
+    anything. See the <a href="../README.md">project README</a> for what maps to real hardware.
+  </p>
+</header>
+
+<div class="layout">
+  <nav class="rail" id="rail"></nav>
+  <main>
+    <div class="scenario-head" id="scenario-head"></div>
+
+    <section>
+      <h2>Boot chain</h2>
+      <div class="chain" id="chain"></div>
+      <div class="outcome-banner" id="outcome-banner"></div>
+    </section>
+
+    <section>
+      <h2>PCR bank — measured boot</h2>
+      <div class="pcrs" id="pcrs"></div>
+    </section>
+
+    <section>
+      <h2>Timeline</h2>
+      <div class="timeline-controls">
+        <button id="btn-prev" title="Previous event">◀ prev</button>
+        <button id="btn-play" title="Play / pause">▶ play</button>
+        <button id="btn-next" title="Next event">next ▶</button>
+        <input type="range" id="scrubber" min="0" max="0" value="0">
+        <span class="step-label" id="step-label">0 / 0</span>
+      </div>
+      <div class="event-card" id="event-card"></div>
+    </section>
+
+    <section>
+      <h2>Audit log — hash-chained, append-only</h2>
+      <div class="ledger" id="ledger"></div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  Generated from a live run by <code class="mono">tools/export_trace.py</code> — regenerate with
+  <code class="mono">make visualize</code>. Part of the
+  <a href="https://github.com/michealswolski/Automotive-ECU-Cybersecurity-Lab-">Automotive ECU Cybersecurity Lab</a>.
+</footer>
+
+<!-- secboot:trace:begin -->
+<script id="trace-data" type="application/json">
+{
+  "pcr_purpose": {
+    "0": "BootROM configuration \u2014 the fuse state digest",
+    "1": "SBL image measurement",
+    "2": "Application image measurement",
+    "3": "Policy digest \u2014 allowed algorithms and revocation bitmap"
+  },
+  "reason_explanations": {
+    "ACCEPTED": "every control passed",
+    "ALGO_BACKEND_UNAVAILABLE": "the installed crypto backend cannot perform this algorithm",
+    "ALGO_NOT_PERMITTED": "algorithm is not on the machine's policy allowlist",
+    "ATTESTATION_MISMATCH": "a PCR differs from the golden reference",
+    "AUDIT_CHAIN_BROKEN": "the audit log hash chain does not verify",
+    "BAD_MAGIC": "container magic is not SBI1 \u2014 this is not a boot image",
+    "COUNTER_EXHAUSTED": "the counter substrate has no advances left",
+    "COUNTER_MONOTONICITY_VIOLATION": "attempt to write a counter to an equal or lower value",
+    "FACTORY_RESET_REFUSED": "factory reset is refused in the PRODUCTION lifecycle state",
+    "FUSE_ALREADY_BURNED": "an OTP fuse is write-once and has already been burned",
+    "HEADER_CRC_MISMATCH": "header CRC32 does not match \u2014 corruption detected early",
+    "IMAGE_TOO_SHORT": "buffer is smaller than the fixed 128-byte header",
+    "KEY_ID_REVOKED": "the signing key ID is set in the fuse revocation bitmap",
+    "KEY_NOT_AUTHORIZED_FOR_STAGE": "signer is not on the bootloader's app-signer allowlist",
+    "KEY_SLOT_MISSING": "no key exists in the requested HSM slot",
+    "LENGTH_OVERFLOW": "declared lengths do not fit the buffer",
+    "NO_PENDING_ADVANCE": "there is no staged counter advance to confirm",
+    "PAYLOAD_DIGEST_MISMATCH": "payload does not match the digest in the signed header",
+    "RESERVED_NOT_ZERO": "reserved header bytes are non-zero (forward-compatibility trap)",
+    "ROLLBACK_BLOCKED": "security version number is behind the monotonic counter",
+    "ROOT_KEY_MISMATCH": "signer public key does not hash to the root key hash in fuses",
+    "SECURE_BOOT_DISABLED": "the secure-boot enable fuse is not burned",
+    "SIGNATURE_INVALID": "signature does not verify over header and payload",
+    "UNKNOWN_ALGO": "algorithm identifier is not one this verifier implements",
+    "UNSUPPORTED_HEADER_VERSION": "header version is not one this ROM can parse",
+    "WRONG_STAGE_ID": "image is for a different boot stage (stage-confusion attack)"
+  },
+  "scenarios": [
+    {
+      "attack": "none \u2014 the reference run",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "ACCEPTED",
+          "seq": 5,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 7
+          },
+          "event": "VERIFY",
+          "hash": "f71313fcdd809c83ce2a5ca77badb29800961d5dd0755a4049a171f5b81f667f",
+          "key_id": 1,
+          "measurement": "09c692333dc447ef4b0d89e132cef5c94ec61b80809aadb42674da287a015410",
+          "pcr": null,
+          "prev_hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "reason": "ACCEPTED",
+          "seq": 6,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 2
+          },
+          "event": "MEASURE",
+          "hash": "8eae7b9272230bb6f7130ddb1e45fe5c832d1bb3043b7c9d751e8375e9307161",
+          "key_id": null,
+          "measurement": "09c692333dc447ef4b0d89e132cef5c94ec61b80809aadb42674da287a015410",
+          "pcr": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+          "prev_hash": "f71313fcdd809c83ce2a5ca77badb29800961d5dd0755a4049a171f5b81f667f",
+          "reason": "ACCEPTED",
+          "seq": 7,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_app",
+            "pending": 7
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "40fda4329c3efaf6b2c811868b6f650e42841a0848a02ca4675c0003d9f6d348",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "8eae7b9272230bb6f7130ddb1e45fe5c832d1bb3043b7c9d751e8375e9307161",
+          "reason": "ACCEPTED",
+          "seq": 8,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "pcrs": {
+              "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+              "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+              "pcr2": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+              "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+            }
+          },
+          "event": "BOOT",
+          "hash": "beb4e33b70803c69c831e2a14c609a0d9ec583f528297c40fe4fa3ef9ec7b4fb",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "40fda4329c3efaf6b2c811868b6f650e42841a0848a02ca4675c0003d9f6d348",
+          "reason": "ACCEPTED",
+          "seq": 9,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {},
+          "event": "CONFIRM_BOOT",
+          "hash": "7258e8b33815a909db731d22c0e661869bb83a336bff3b92be6f88aad0505a52",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "beb4e33b70803c69c831e2a14c609a0d9ec583f528297c40fe4fa3ef9ec7b4fb",
+          "reason": "ACCEPTED",
+          "seq": 10,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {},
+          "event": "CONFIRM_BOOT",
+          "hash": "872b240a1970f3662bfa3854805a3dc6c911c3fd554a91040febdb5cf91cfb11",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "7258e8b33815a909db731d22c0e661869bb83a336bff3b92be6f88aad0505a52",
+          "reason": "ACCEPTED",
+          "seq": 11,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": null,
+        "detail": "",
+        "ok": true,
+        "reason": "ACCEPTED",
+        "records": 12
+      },
+      "expected": "ACCEPTED",
+      "final_pcrs": {
+        "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "happy",
+      "matched": true,
+      "outcome": "ACCEPTED",
+      "title": "Clean boot"
+    },
+    {
+      "attack": "flash write access, no signing key",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "ACCEPTED",
+          "seq": 5,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "REJECT",
+          "detail": {
+            "computed": "f4343f2993749e4c",
+            "header": "fe0e7498019c2b05"
+          },
+          "event": "VERIFY",
+          "hash": "f8af3f54ff32d265784ffe16f677115d3f1e1cce2c2f619cc1943c28ace0451e",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "reason": "PAYLOAD_DIGEST_MISMATCH",
+          "seq": 6,
+          "severity": "ERROR",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "HALT",
+          "detail": {
+            "note": "control was not transferred"
+          },
+          "event": "HALT",
+          "hash": "a8ec5b803aca51f21c2b33e5d6ab35734d8ae32c7d0c237ed8fac1f1e3990b02",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "f8af3f54ff32d265784ffe16f677115d3f1e1cce2c2f619cc1943c28ace0451e",
+          "reason": "PAYLOAD_DIGEST_MISMATCH",
+          "seq": 7,
+          "severity": "CRITICAL",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": null,
+        "detail": "",
+        "ok": true,
+        "reason": "ACCEPTED",
+        "records": 8
+      },
+      "expected": "PAYLOAD_DIGEST_MISMATCH",
+      "final_pcrs": {
+        "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "corrupt",
+      "matched": true,
+      "outcome": "PAYLOAD_DIGEST_MISMATCH",
+      "title": "One bit flipped in the application payload"
+    },
+    {
+      "attack": "an old signed release plus install access",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "ACCEPTED",
+          "seq": 5,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 7
+          },
+          "event": "VERIFY",
+          "hash": "f71313fcdd809c83ce2a5ca77badb29800961d5dd0755a4049a171f5b81f667f",
+          "key_id": 1,
+          "measurement": "09c692333dc447ef4b0d89e132cef5c94ec61b80809aadb42674da287a015410",
+          "pcr": null,
+          "prev_hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "reason": "ACCEPTED",
+          "seq": 6,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 2
+          },
+          "event": "MEASURE",
+          "hash": "8eae7b9272230bb6f7130ddb1e45fe5c832d1bb3043b7c9d751e8375e9307161",
+          "key_id": null,
+          "measurement": "09c692333dc447ef4b0d89e132cef5c94ec61b80809aadb42674da287a015410",
+          "pcr": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+          "prev_hash": "f71313fcdd809c83ce2a5ca77badb29800961d5dd0755a4049a171f5b81f667f",
+          "reason": "ACCEPTED",
+          "seq": 7,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_app",
+            "pending": 7
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "40fda4329c3efaf6b2c811868b6f650e42841a0848a02ca4675c0003d9f6d348",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "8eae7b9272230bb6f7130ddb1e45fe5c832d1bb3043b7c9d751e8375e9307161",
+          "reason": "ACCEPTED",
+          "seq": 8,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "pcrs": {
+              "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+              "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+              "pcr2": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+              "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+            }
+          },
+          "event": "BOOT",
+          "hash": "beb4e33b70803c69c831e2a14c609a0d9ec583f528297c40fe4fa3ef9ec7b4fb",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "40fda4329c3efaf6b2c811868b6f650e42841a0848a02ca4675c0003d9f6d348",
+          "reason": "ACCEPTED",
+          "seq": 9,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {},
+          "event": "CONFIRM_BOOT",
+          "hash": "7258e8b33815a909db731d22c0e661869bb83a336bff3b92be6f88aad0505a52",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "beb4e33b70803c69c831e2a14c609a0d9ec583f528297c40fe4fa3ef9ec7b4fb",
+          "reason": "ACCEPTED",
+          "seq": 10,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {},
+          "event": "CONFIRM_BOOT",
+          "hash": "872b240a1970f3662bfa3854805a3dc6c911c3fd554a91040febdb5cf91cfb11",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "7258e8b33815a909db731d22c0e661869bb83a336bff3b92be6f88aad0505a52",
+          "reason": "ACCEPTED",
+          "seq": 11,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 7,
+            "svn_sbl": 3
+          },
+          "event": "RESET",
+          "hash": "753427bdd6d09e31b77cdc8e0a172ed80bef9ae9c507d792085109ff70b68238",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "872b240a1970f3662bfa3854805a3dc6c911c3fd554a91040febdb5cf91cfb11",
+          "reason": "ACCEPTED",
+          "seq": 12,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "54e5b89b3efe55f5c416e093ae79d5c24ffcccbbc5aadcb507fb242729f19df7",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "753427bdd6d09e31b77cdc8e0a172ed80bef9ae9c507d792085109ff70b68238",
+          "reason": "ACCEPTED",
+          "seq": 13,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 3,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "7bc6ce8d42ef0057cfe37754127de6b9615c6f8cbfa1cfff79d04f3ae51d3539",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "54e5b89b3efe55f5c416e093ae79d5c24ffcccbbc5aadcb507fb242729f19df7",
+          "reason": "ACCEPTED",
+          "seq": 14,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "6e0cf0abbc420781e8af7ed3fd97d41a723740b5d5797b9741a1a2c5352ad0d7",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "7bc6ce8d42ef0057cfe37754127de6b9615c6f8cbfa1cfff79d04f3ae51d3539",
+          "reason": "ACCEPTED",
+          "seq": 15,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "0687c8fab056132defd344eab5ca174800d608cc3bd834697cf8bf005cd6d3cc",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "6e0cf0abbc420781e8af7ed3fd97d41a723740b5d5797b9741a1a2c5352ad0d7",
+          "reason": "ACCEPTED",
+          "seq": 16,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "REJECT",
+          "detail": {
+            "counter": "svn_app",
+            "counter_svn": 7,
+            "image_svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "c8c9116c635e61b2a9d0ab87edc5453147e5b77f2950649f9aff9659050c14e3",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "0687c8fab056132defd344eab5ca174800d608cc3bd834697cf8bf005cd6d3cc",
+          "reason": "ROLLBACK_BLOCKED",
+          "seq": 17,
+          "severity": "ERROR",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "HALT",
+          "detail": {
+            "note": "control was not transferred"
+          },
+          "event": "HALT",
+          "hash": "566014627b390259807b279c9ffb7aa3ce8c2a8ac1b24c78d3fd04c77ed38071",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "c8c9116c635e61b2a9d0ab87edc5453147e5b77f2950649f9aff9659050c14e3",
+          "reason": "ROLLBACK_BLOCKED",
+          "seq": 18,
+          "severity": "CRITICAL",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": null,
+        "detail": "",
+        "ok": true,
+        "reason": "ACCEPTED",
+        "records": 19
+      },
+      "expected": "ROLLBACK_BLOCKED",
+      "final_pcrs": {
+        "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "downgrade",
+      "matched": true,
+      "outcome": "ROLLBACK_BLOCKED",
+      "title": "An older release, re-signed with the legitimate key"
+    },
+    {
+      "attack": "the attacker's signing infrastructure",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "ACCEPTED",
+          "seq": 5,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "REJECT",
+          "detail": {
+            "authorized_signers": 1,
+            "image_signer": "a3b01872310f53d3"
+          },
+          "event": "VERIFY",
+          "hash": "a47174b3a5a47386ccaef3e9bcbc372173c8ca63f7c1d6240d8b31b29b3d4cbe",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "reason": "KEY_NOT_AUTHORIZED_FOR_STAGE",
+          "seq": 6,
+          "severity": "ERROR",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "HALT",
+          "detail": {
+            "note": "control was not transferred"
+          },
+          "event": "HALT",
+          "hash": "12dd93f5cbb0aa83489e112af714829bd621fdbfd5b98f3d29d0e601f97824a0",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "a47174b3a5a47386ccaef3e9bcbc372173c8ca63f7c1d6240d8b31b29b3d4cbe",
+          "reason": "KEY_NOT_AUTHORIZED_FOR_STAGE",
+          "seq": 7,
+          "severity": "CRITICAL",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": null,
+        "detail": "",
+        "ok": true,
+        "reason": "ACCEPTED",
+        "records": 8
+      },
+      "expected": "KEY_NOT_AUTHORIZED_FOR_STAGE",
+      "final_pcrs": {
+        "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "forged",
+      "matched": true,
+      "outcome": "KEY_NOT_AUTHORIZED_FOR_STAGE",
+      "title": "Signed with the attacker's own key"
+    },
+    {
+      "attack": "key theft, followed by the OEM's response",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "ACCEPTED",
+          "seq": 5,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 7
+          },
+          "event": "VERIFY",
+          "hash": "f71313fcdd809c83ce2a5ca77badb29800961d5dd0755a4049a171f5b81f667f",
+          "key_id": 1,
+          "measurement": "09c692333dc447ef4b0d89e132cef5c94ec61b80809aadb42674da287a015410",
+          "pcr": null,
+          "prev_hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "reason": "ACCEPTED",
+          "seq": 6,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 2
+          },
+          "event": "MEASURE",
+          "hash": "8eae7b9272230bb6f7130ddb1e45fe5c832d1bb3043b7c9d751e8375e9307161",
+          "key_id": null,
+          "measurement": "09c692333dc447ef4b0d89e132cef5c94ec61b80809aadb42674da287a015410",
+          "pcr": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+          "prev_hash": "f71313fcdd809c83ce2a5ca77badb29800961d5dd0755a4049a171f5b81f667f",
+          "reason": "ACCEPTED",
+          "seq": 7,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_app",
+            "pending": 7
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "40fda4329c3efaf6b2c811868b6f650e42841a0848a02ca4675c0003d9f6d348",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "8eae7b9272230bb6f7130ddb1e45fe5c832d1bb3043b7c9d751e8375e9307161",
+          "reason": "ACCEPTED",
+          "seq": 8,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "pcrs": {
+              "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+              "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+              "pcr2": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+              "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+            }
+          },
+          "event": "BOOT",
+          "hash": "beb4e33b70803c69c831e2a14c609a0d9ec583f528297c40fe4fa3ef9ec7b4fb",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "40fda4329c3efaf6b2c811868b6f650e42841a0848a02ca4675c0003d9f6d348",
+          "reason": "ACCEPTED",
+          "seq": 9,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {},
+          "event": "CONFIRM_BOOT",
+          "hash": "7258e8b33815a909db731d22c0e661869bb83a336bff3b92be6f88aad0505a52",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "beb4e33b70803c69c831e2a14c609a0d9ec583f528297c40fe4fa3ef9ec7b4fb",
+          "reason": "ACCEPTED",
+          "seq": 10,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {},
+          "event": "CONFIRM_BOOT",
+          "hash": "872b240a1970f3662bfa3854805a3dc6c911c3fd554a91040febdb5cf91cfb11",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "7258e8b33815a909db731d22c0e661869bb83a336bff3b92be6f88aad0505a52",
+          "reason": "ACCEPTED",
+          "seq": 11,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 7,
+            "svn_sbl": 3
+          },
+          "event": "RESET",
+          "hash": "291a0369e47803680c02dcbd4f9519bf1d04973cae93d6c482577fa72a310cde",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "760a292c1c4d22bb81eb0ed8ca3160908b31c19a124fb20f7df728c5adc2b794",
+          "prev_hash": "872b240a1970f3662bfa3854805a3dc6c911c3fd554a91040febdb5cf91cfb11",
+          "reason": "ACCEPTED",
+          "seq": 12,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "41df4fbc20c3a85a9556d0e499243e8c7ba98c79390650d13c25ab9bc6dab009",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "291a0369e47803680c02dcbd4f9519bf1d04973cae93d6c482577fa72a310cde",
+          "reason": "ACCEPTED",
+          "seq": 13,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 3,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "7601110bb88594c5f2b3d061c7db7771e4a60f5c9ceca718c3ba387729cd518e",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "41df4fbc20c3a85a9556d0e499243e8c7ba98c79390650d13c25ab9bc6dab009",
+          "reason": "ACCEPTED",
+          "seq": 14,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "e6490562bac0f213ed1125bd54ec05689fb48638bcf630b182e5513a80b06196",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "7601110bb88594c5f2b3d061c7db7771e4a60f5c9ceca718c3ba387729cd518e",
+          "reason": "ACCEPTED",
+          "seq": 15,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "205b90a3f00ea2655c8a824f4a8b2c70c92e4738760d45eb69c3375fa5d54066",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "e6490562bac0f213ed1125bd54ec05689fb48638bcf630b182e5513a80b06196",
+          "reason": "ACCEPTED",
+          "seq": 16,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "REJECT",
+          "detail": {
+            "key_id": 1
+          },
+          "event": "VERIFY",
+          "hash": "c330adb91777103c2667627092ce00cbde4f2e191fd35339ac62b71cc88bb697",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "205b90a3f00ea2655c8a824f4a8b2c70c92e4738760d45eb69c3375fa5d54066",
+          "reason": "KEY_ID_REVOKED",
+          "seq": 17,
+          "severity": "ERROR",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "HALT",
+          "detail": {
+            "note": "control was not transferred"
+          },
+          "event": "HALT",
+          "hash": "cdc0dd79b21191958715520a2679bf83cf026738d42ec24aeda7060e4904d84f",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "c330adb91777103c2667627092ce00cbde4f2e191fd35339ac62b71cc88bb697",
+          "reason": "KEY_ID_REVOKED",
+          "seq": 18,
+          "severity": "CRITICAL",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": null,
+        "detail": "",
+        "ok": true,
+        "reason": "ACCEPTED",
+        "records": 19
+      },
+      "expected": "KEY_ID_REVOKED",
+      "final_pcrs": {
+        "pcr0": "760a292c1c4d22bb81eb0ed8ca3160908b31c19a124fb20f7df728c5adc2b794",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "revoked",
+      "matched": true,
+      "outcome": "KEY_ID_REVOKED",
+      "title": "The signing key is compromised, then revoked"
+    },
+    {
+      "attack": "install access, no modification at all",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "REJECT",
+          "detail": {
+            "actual": "SBL",
+            "expected": "APP"
+          },
+          "event": "VERIFY",
+          "hash": "40ec5058b73b8c0e6810f3d253b077efd6ca56b40819b6e0f6c5c6a1d67cbeaf",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "WRONG_STAGE_ID",
+          "seq": 5,
+          "severity": "ERROR",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "HALT",
+          "detail": {
+            "note": "control was not transferred"
+          },
+          "event": "HALT",
+          "hash": "2d7a3ab48b794ac945ee6b4086108172b36736650b5436969bec2ce1b0b510dc",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "40ec5058b73b8c0e6810f3d253b077efd6ca56b40819b6e0f6c5c6a1d67cbeaf",
+          "reason": "WRONG_STAGE_ID",
+          "seq": 6,
+          "severity": "CRITICAL",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": null,
+        "detail": "",
+        "ok": true,
+        "reason": "ACCEPTED",
+        "records": 7
+      },
+      "expected": "WRONG_STAGE_ID",
+      "final_pcrs": {
+        "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "stage-confusion",
+      "matched": true,
+      "outcome": "WRONG_STAGE_ID",
+      "title": "A bootloader image presented as the application"
+    },
+    {
+      "attack": "a signing key of the attacker's choosing",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 1,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "bc399f07aca3fcf21a70060345c3a8dce3ed5bee2cdbf920f5bd9b77a6404243",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "ACCEPTED",
+          "seq": 5,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "REJECT",
+          "detail": {
+            "algo": "ecdsa-p256",
+            "allowed": [
+              "ECDSA_P384_SHA384",
+              "ED25519"
+            ]
+          },
+          "event": "VERIFY",
+          "hash": "49f321ecf4d408e47920d67d3d1d35ae8d8aebffa4b9320d0b023de83e83d467",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "bc399f07aca3fcf21a70060345c3a8dce3ed5bee2cdbf920f5bd9b77a6404243",
+          "reason": "ALGO_NOT_PERMITTED",
+          "seq": 6,
+          "severity": "ERROR",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "HALT",
+          "detail": {
+            "note": "control was not transferred"
+          },
+          "event": "HALT",
+          "hash": "64b6cc16c9322d49c5eccfd2838d5a71d5020ade32da783b8ab3d8563f4aa7a3",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "49f321ecf4d408e47920d67d3d1d35ae8d8aebffa4b9320d0b023de83e83d467",
+          "reason": "ALGO_NOT_PERMITTED",
+          "seq": 7,
+          "severity": "CRITICAL",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": null,
+        "detail": "",
+        "ok": true,
+        "reason": "ACCEPTED",
+        "records": 8
+      },
+      "expected": "ALGO_NOT_PERMITTED",
+      "final_pcrs": {
+        "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "algo-downgrade",
+      "matched": true,
+      "outcome": "ALGO_NOT_PERMITTED",
+      "title": "An algorithm below the machine's policy floor"
+    },
+    {
+      "attack": "write access to the log",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "ACCEPTED",
+          "seq": 5,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "computed": "f4343f2993749e4c",
+            "header": "fe0e7498019c2b05"
+          },
+          "event": "VERIFY",
+          "hash": "f8af3f54ff32d265784ffe16f677115d3f1e1cce2c2f619cc1943c28ace0451e",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "reason": "PAYLOAD_DIGEST_MISMATCH",
+          "seq": 6,
+          "severity": "ERROR",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "HALT",
+          "detail": {
+            "note": "control was not transferred"
+          },
+          "event": "HALT",
+          "hash": "a8ec5b803aca51f21c2b33e5d6ab35734d8ae32c7d0c237ed8fac1f1e3990b02",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "f8af3f54ff32d265784ffe16f677115d3f1e1cce2c2f619cc1943c28ace0451e",
+          "reason": "PAYLOAD_DIGEST_MISMATCH",
+          "seq": 7,
+          "severity": "CRITICAL",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": 6,
+        "detail": "record contents do not match their recorded hash",
+        "ok": false,
+        "reason": "AUDIT_CHAIN_BROKEN",
+        "records": 7
+      },
+      "expected": "AUDIT_CHAIN_BROKEN",
+      "final_pcrs": {
+        "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "0000000000000000000000000000000000000000000000000000000000000000",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "audit-tamper",
+      "matched": true,
+      "outcome": "AUDIT_CHAIN_BROKEN",
+      "title": "The audit log edited after the fact"
+    },
+    {
+      "attack": "physical access and fault injection",
+      "audit": [
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 0,
+            "svn_sbl": 0
+          },
+          "event": "RESET",
+          "hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "reason": "ACCEPTED",
+          "seq": 0,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "44df528e5598bf7519aa7f20ad43da58ddd49d237bbdc3749865bfbfa2a352ff",
+          "reason": "ACCEPTED",
+          "seq": 1,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "2b266db6f1b38ca879b1b506f6948664e1126f5bfb350d748d98fa2a042d1b1a",
+          "reason": "ACCEPTED",
+          "seq": 2,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "d2d2f6565dc0c71a8a4d86850517a61f851921f7f8b047584d473d32fac3afd6",
+          "reason": "ACCEPTED",
+          "seq": 3,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_sbl",
+            "pending": 3
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "861b86b1c9dc942aefd5e2639fcb80f9abe7729def77344a7e770acf29cbe1d2",
+          "reason": "ACCEPTED",
+          "seq": 4,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 464,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "83c3ce5a9ae6b02549e155828a7526d02162a17026d449933371e0b33b9c7850",
+          "reason": "ACCEPTED",
+          "seq": 5,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 0,
+            "svn": 7
+          },
+          "event": "VERIFY",
+          "hash": "f71313fcdd809c83ce2a5ca77badb29800961d5dd0755a4049a171f5b81f667f",
+          "key_id": 1,
+          "measurement": "09c692333dc447ef4b0d89e132cef5c94ec61b80809aadb42674da287a015410",
+          "pcr": null,
+          "prev_hash": "20eb4e1ece1a724bf28e5c68e2a501e26262f2ac40ba881e02905fb755fef8b3",
+          "reason": "ACCEPTED",
+          "seq": 6,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 2
+          },
+          "event": "MEASURE",
+          "hash": "8eae7b9272230bb6f7130ddb1e45fe5c832d1bb3043b7c9d751e8375e9307161",
+          "key_id": null,
+          "measurement": "09c692333dc447ef4b0d89e132cef5c94ec61b80809aadb42674da287a015410",
+          "pcr": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+          "prev_hash": "f71313fcdd809c83ce2a5ca77badb29800961d5dd0755a4049a171f5b81f667f",
+          "reason": "ACCEPTED",
+          "seq": 7,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "counter": "svn_app",
+            "pending": 7
+          },
+          "event": "COUNTER_STAGE",
+          "hash": "40fda4329c3efaf6b2c811868b6f650e42841a0848a02ca4675c0003d9f6d348",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "8eae7b9272230bb6f7130ddb1e45fe5c832d1bb3043b7c9d751e8375e9307161",
+          "reason": "ACCEPTED",
+          "seq": 8,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "pcrs": {
+              "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+              "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+              "pcr2": "77719a90a6291bc761bc482d91eef96431ff70a9adc3434e6d1d0f76b355b014",
+              "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+            }
+          },
+          "event": "BOOT",
+          "hash": "beb4e33b70803c69c831e2a14c609a0d9ec583f528297c40fe4fa3ef9ec7b4fb",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "40fda4329c3efaf6b2c811868b6f650e42841a0848a02ca4675c0003d9f6d348",
+          "reason": "ACCEPTED",
+          "seq": 9,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {},
+          "event": "CONFIRM_BOOT",
+          "hash": "7258e8b33815a909db731d22c0e661869bb83a336bff3b92be6f88aad0505a52",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "beb4e33b70803c69c831e2a14c609a0d9ec583f528297c40fe4fa3ef9ec7b4fb",
+          "reason": "ACCEPTED",
+          "seq": 10,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {},
+          "event": "CONFIRM_BOOT",
+          "hash": "872b240a1970f3662bfa3854805a3dc6c911c3fd554a91040febdb5cf91cfb11",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "7258e8b33815a909db731d22c0e661869bb83a336bff3b92be6f88aad0505a52",
+          "reason": "ACCEPTED",
+          "seq": 11,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "lifecycle": "PRODUCTION",
+            "secure_boot_enable": true,
+            "svn_app": 7,
+            "svn_sbl": 3
+          },
+          "event": "RESET",
+          "hash": "753427bdd6d09e31b77cdc8e0a172ed80bef9ae9c507d792085109ff70b68238",
+          "key_id": null,
+          "measurement": null,
+          "pcr": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+          "prev_hash": "872b240a1970f3662bfa3854805a3dc6c911c3fd554a91040febdb5cf91cfb11",
+          "reason": "ACCEPTED",
+          "seq": 12,
+          "severity": "INFO",
+          "stage": "ROM",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 256,
+            "svn": 3
+          },
+          "event": "PARSE",
+          "hash": "54e5b89b3efe55f5c416e093ae79d5c24ffcccbbc5aadcb507fb242729f19df7",
+          "key_id": 0,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "753427bdd6d09e31b77cdc8e0a172ed80bef9ae9c507d792085109ff70b68238",
+          "reason": "ACCEPTED",
+          "seq": 13,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "note": "simulated glitch forced the signature compare to pass"
+          },
+          "event": "FAULT_INJECTION",
+          "hash": "e6c026b76e0fb354c831cf03c1bff4ede0d676d5425ecb5e43a8312295c43dda",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "54e5b89b3efe55f5c416e093ae79d5c24ffcccbbc5aadcb507fb242729f19df7",
+          "reason": "SIGNATURE_INVALID",
+          "seq": 14,
+          "severity": "CRITICAL",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 3,
+            "svn": 3
+          },
+          "event": "VERIFY",
+          "hash": "2c62d2efc2f2b97b77342130b98dfff72607d580589d178af624039a4fa64530",
+          "key_id": 0,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": null,
+          "prev_hash": "e6c026b76e0fb354c831cf03c1bff4ede0d676d5425ecb5e43a8312295c43dda",
+          "reason": "ACCEPTED",
+          "seq": 15,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 1
+          },
+          "event": "MEASURE",
+          "hash": "5f246659a23624f0e7575cce5fcc0cfb1a254bc1279d2610488feb8b876f9c9e",
+          "key_id": null,
+          "measurement": "bab8e448fad3a481918f7a35c4629e312b20bdf180db7c3e0431de182307ce0e",
+          "pcr": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+          "prev_hash": "2c62d2efc2f2b97b77342130b98dfff72607d580589d178af624039a4fa64530",
+          "reason": "ACCEPTED",
+          "seq": 16,
+          "severity": "INFO",
+          "stage": "SBL",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "PASS",
+          "detail": {
+            "algo_id": 2,
+            "payload_len": 468,
+            "svn": 7
+          },
+          "event": "PARSE",
+          "hash": "4b6ed56b831323ee1622c289baf34a32f451068bdc02a4f77397e6b916098188",
+          "key_id": 1,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "5f246659a23624f0e7575cce5fcc0cfb1a254bc1279d2610488feb8b876f9c9e",
+          "reason": "ACCEPTED",
+          "seq": 17,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "note": "simulated glitch forced the signature compare to pass"
+          },
+          "event": "FAULT_INJECTION",
+          "hash": "e22ac7977e275fdc2378e787d0253f4fa0dd85c06bc8d5ecabc316fd4cf4172a",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "4b6ed56b831323ee1622c289baf34a32f451068bdc02a4f77397e6b916098188",
+          "reason": "SIGNATURE_INVALID",
+          "seq": 18,
+          "severity": "CRITICAL",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "algo": "ed25519",
+            "counter_svn": 7,
+            "svn": 7
+          },
+          "event": "VERIFY",
+          "hash": "6223b43f7286654732709e8068d6b0a3bb1e3b9706321c61a25b2d4ee357eaf6",
+          "key_id": 1,
+          "measurement": "271e0621c2021930b7815776a566154714c149a24dfc5975b9d649056380eae2",
+          "pcr": null,
+          "prev_hash": "e22ac7977e275fdc2378e787d0253f4fa0dd85c06bc8d5ecabc316fd4cf4172a",
+          "reason": "ACCEPTED",
+          "seq": 19,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "pcr_index": 2
+          },
+          "event": "MEASURE",
+          "hash": "c1ee582f2bd4726b4c414baac5cb48ecdb03212366803dde641e78894e9ccbcd",
+          "key_id": null,
+          "measurement": "271e0621c2021930b7815776a566154714c149a24dfc5975b9d649056380eae2",
+          "pcr": "22a03c6dc10d5124e4c57cb07b814ff2ff8dc430d7611cc42089c730fa0b56a1",
+          "prev_hash": "6223b43f7286654732709e8068d6b0a3bb1e3b9706321c61a25b2d4ee357eaf6",
+          "reason": "ACCEPTED",
+          "seq": 20,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "ACCEPT",
+          "detail": {
+            "pcrs": {
+              "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+              "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+              "pcr2": "22a03c6dc10d5124e4c57cb07b814ff2ff8dc430d7611cc42089c730fa0b56a1",
+              "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+            }
+          },
+          "event": "BOOT",
+          "hash": "98339d3529c7140292680df25893739bfa1229a94bea023fe2de94dffcbab928",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "c1ee582f2bd4726b4c414baac5cb48ecdb03212366803dde641e78894e9ccbcd",
+          "reason": "ACCEPTED",
+          "seq": 21,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "decision": "INFO",
+          "detail": {
+            "nonce": "demo-nonce"
+          },
+          "event": "ATTEST",
+          "hash": "1d792f1715f7844e606ab330900cc0f352bb6d751ee59afa3d31a0ddfb317e65",
+          "key_id": null,
+          "measurement": null,
+          "pcr": null,
+          "prev_hash": "98339d3529c7140292680df25893739bfa1229a94bea023fe2de94dffcbab928",
+          "reason": "ACCEPTED",
+          "seq": 22,
+          "severity": "INFO",
+          "stage": "APP",
+          "ts": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "chain": {
+        "broken_seq": null,
+        "detail": "",
+        "ok": true,
+        "reason": "ACCEPTED",
+        "records": 23
+      },
+      "expected": "ATTESTATION_MISMATCH",
+      "final_pcrs": {
+        "pcr0": "560e2059ddf63e88575f9c6397eed068634d3fb52a43484b1c1dfe6e5d652bae",
+        "pcr1": "c747566fe2dcc42931007a21ef8eae2c47b517b4a80088e45c303c20af55b19c",
+        "pcr2": "22a03c6dc10d5124e4c57cb07b814ff2ff8dc430d7611cc42089c730fa0b56a1",
+        "pcr3": "d39f8deaba27d284697d175c5952762bae82957428a729ced5654b09938ec063"
+      },
+      "key": "glitch",
+      "matched": true,
+      "outcome": "ATTESTATION_MISMATCH",
+      "title": "The signature compare is glitched, and measured boot catches it"
+    }
+  ],
+  "seed": 1337,
+  "stage_names": {
+    "1": "SBL",
+    "2": "APP"
+  }
+}
+</script>
+<!-- secboot:trace:end -->
+
+<script>
+(function () {
+  "use strict";
+
+  var TRACE = JSON.parse(document.getElementById("trace-data").textContent);
+  var scenarios = TRACE.scenarios || [];
+  var reasonExplain = TRACE.reason_explanations || {};
+  var pcrPurpose = TRACE.pcr_purpose || {};
+
+  var state = { scenarioIndex: 0, step: 0, playing: false, timer: null };
+
+  var rail = document.getElementById("rail");
+  var scenarioHead = document.getElementById("scenario-head");
+  var chainEl = document.getElementById("chain");
+  var outcomeBanner = document.getElementById("outcome-banner");
+  var pcrsEl = document.getElementById("pcrs");
+  var scrubber = document.getElementById("scrubber");
+  var stepLabel = document.getElementById("step-label");
+  var eventCard = document.getElementById("event-card");
+  var ledger = document.getElementById("ledger");
+  var btnPrev = document.getElementById("btn-prev");
+  var btnNext = document.getElementById("btn-next");
+  var btnPlay = document.getElementById("btn-play");
+
+  function truncHex(hex, n) {
+    if (!hex) return "—";
+    n = n || 16;
+    return hex.length > n ? hex.slice(0, n) + "…" : hex;
+  }
+
+  function currentScenario() {
+    return scenarios[state.scenarioIndex];
+  }
+
+  function renderRail() {
+    rail.innerHTML = "";
+    scenarios.forEach(function (s, i) {
+      var btn = document.createElement("button");
+      btn.className = "scenario-btn" + (i === state.scenarioIndex ? " active" : "");
+      btn.innerHTML =
+        '<span class="num">' + (i + 1) + " / " + scenarios.length + "</span>" +
+        '<span class="title">' + s.title + "</span>" +
+        '<span class="attack">' + s.attack + "</span>" +
+        '<span class="badge ' + (s.matched ? "pass" : "fail") + '">' + s.outcome + "</span>";
+      btn.addEventListener("click", function () { selectScenario(i); });
+      rail.appendChild(btn);
+    });
+  }
+
+  function selectScenario(i) {
+    state.scenarioIndex = i;
+    state.step = 0;
+    stopPlaying();
+    renderRail();
+    renderScenario();
+  }
+
+  function renderScenario() {
+    var s = currentScenario();
+    scenarioHead.innerHTML =
+      "<h3>" + (state.scenarioIndex + 1) + ". " + s.title + "</h3>" +
+      '<div class="meta">' +
+      "<span>attacker capability: <strong>" + s.attack + "</strong></span>" +
+      "<span>expected control: <strong>" + s.expected + "</strong></span>" +
+      "</div>";
+
+    scrubber.max = Math.max(0, s.audit.length - 1);
+    scrubber.value = state.step;
+    renderStep();
+  }
+
+  function stageStatus(records, stageName) {
+    var relevant = records.filter(function (r) { return r.stage === stageName; });
+    if (relevant.length === 0) return "pending";
+    if (relevant.some(function (r) { return r.decision === "REJECT"; })) return "fail";
+    var accepted = relevant.some(function (r) {
+      return (r.event === "BOOT" && r.decision === "ACCEPT") ||
+             (r.event === "VERIFY" && r.decision === "ACCEPT") ||
+             r.event === "MEASURE";
+    });
+    return accepted ? "pass" : "active";
+  }
+
+  function renderChain(records) {
+    var stages = [
+      { key: "ROM", label: "BootROM", info: "immutable — fuse + policy digest" },
+      { key: "SBL", label: "SBL", info: "verifies application" },
+      { key: "APP", label: "Application", info: "confirms healthy start" }
+    ];
+    chainEl.innerHTML = "";
+    stages.forEach(function (st, i) {
+      var status = stageStatus(records, st.key);
+      var node = document.createElement("div");
+      node.className = "node " + status;
+      var last = records.filter(function (r) { return r.stage === st.key; }).slice(-1)[0];
+      var detail = "";
+      if (last) {
+        if (last.measurement) detail = "measured " + truncHex(last.measurement, 14);
+        else if (last.reason && last.reason !== "ACCEPTED") detail = last.reason;
+        else detail = last.event;
+      }
+      node.innerHTML =
+        '<div class="label"><span class="dot"></span>' + st.info + "</div>" +
+        '<div class="name">' + st.label + "</div>" +
+        '<div class="detail">' + detail + "</div>";
+      chainEl.appendChild(node);
+      if (i < stages.length - 1) {
+        var arrow = document.createElement("div");
+        arrow.className = "arrow";
+        arrow.textContent = "→";
+        chainEl.appendChild(arrow);
+      }
+    });
+  }
+
+  function renderOutcomeBanner(s, records) {
+    var halted = records.find(function (r) { return r.event === "HALT"; });
+    var booted = records.some(function (r) { return r.event === "BOOT" && r.decision === "ACCEPT"; });
+    outcomeBanner.className = "outcome-banner " + (s.matched ? "pass" : "fail");
+    if (halted) {
+      outcomeBanner.innerHTML =
+        "<strong>HALTED</strong> at " + halted.stage + " — <code class='mono'>" + halted.reason + "</code>" +
+        '<div class="why">' + (reasonExplain[halted.reason] || "") + "</div>";
+    } else if (booted) {
+      outcomeBanner.innerHTML =
+        "<strong>BOOTED</strong> — control transferred to the application." +
+        '<div class="why">' + (reasonExplain[s.outcome] || "") + "</div>";
+    } else {
+      outcomeBanner.innerHTML = "<strong>in progress…</strong>";
+    }
+  }
+
+  function renderPcrs(s, currentRecord) {
+    pcrsEl.innerHTML = "";
+    var hotIndex = null;
+    if (currentRecord) {
+      if (currentRecord.event === "RESET") hotIndex = 0;
+      else if (currentRecord.event === "MEASURE" && currentRecord.detail && "pcr_index" in currentRecord.detail) {
+        hotIndex = currentRecord.detail.pcr_index;
+      }
+    }
+    for (var i = 0; i < 4; i++) {
+      var box = document.createElement("div");
+      box.className = "pcr" + (i === hotIndex ? " hot" : "");
+      var hex = s.final_pcrs["pcr" + i] || "";
+      box.innerHTML =
+        '<div class="idx">PCR' + i + "</div>" +
+        '<div class="purpose">' + (pcrPurpose[String(i)] || "") + "</div>" +
+        '<div class="hex" title="' + hex + '">' + truncHex(hex, 44) + "</div>";
+      pcrsEl.appendChild(box);
+    }
+  }
+
+  function renderEventCard(record) {
+    if (!record) {
+      eventCard.innerHTML = "<em>no events yet</em>";
+      return;
+    }
+    var pillClass = record.decision || "INFO";
+    var explain = reasonExplain[record.reason] || "";
+    var detailJson = JSON.stringify(record.detail || {}, null, 2);
+    eventCard.innerHTML =
+      '<div class="row1">' +
+      '<span class="decision-pill ' + pillClass + '">' + record.decision + "</span>" +
+      '<span class="stage-event">' + record.stage + " · " + record.event + "</span>" +
+      "</div>" +
+      (record.reason ? '<div class="reason">reason: <code>' + record.reason + "</code></div>" : "") +
+      (explain ? '<div class="explain">' + explain + "</div>" : "") +
+      "<details" + (record.detail && Object.keys(record.detail).length ? "" : " style='display:none'") + ">" +
+      "<summary>detail</summary><pre>" + detailJson + "</pre></details>";
+  }
+
+  function renderLedger(s) {
+    ledger.innerHTML = "";
+    s.audit.forEach(function (record, i) {
+      var row = document.createElement("div");
+      var broken = s.chain.broken_seq !== null && s.chain.broken_seq !== undefined && record.seq >= s.chain.broken_seq;
+      row.className = "ledger-row" + (i === state.step ? " current" : "") + (broken ? " broken" : "");
+      row.innerHTML =
+        '<span class="seq">#' + record.seq + "</span>" +
+        '<span class="decision-pill ' + record.decision + '">' + record.decision + "</span>" +
+        "<span>" + record.stage + " · " + record.event + "</span>" +
+        '<span class="hash">' + truncHex(record.hash, 10) + "</span>";
+      row.addEventListener("click", function () { setStep(i); });
+      ledger.appendChild(row);
+    });
+  }
+
+  function renderStep() {
+    var s = currentScenario();
+    var records = s.audit.slice(0, state.step + 1);
+    var current = s.audit[state.step];
+
+    stepLabel.textContent = (state.step + 1) + " / " + s.audit.length;
+    btnPrev.disabled = state.step <= 0;
+    btnNext.disabled = state.step >= s.audit.length - 1;
+
+    renderChain(records);
+    renderOutcomeBanner(s, records);
+    renderPcrs(s, current);
+    renderEventCard(current);
+    renderLedger(s);
+  }
+
+  function setStep(i) {
+    var s = currentScenario();
+    state.step = Math.max(0, Math.min(i, s.audit.length - 1));
+    scrubber.value = state.step;
+    renderStep();
+  }
+
+  function stopPlaying() {
+    state.playing = false;
+    btnPlay.textContent = "▶ play";
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+  }
+
+  function togglePlay() {
+    var s = currentScenario();
+    if (state.playing) { stopPlaying(); return; }
+    if (state.step >= s.audit.length - 1) state.step = 0;
+    state.playing = true;
+    btnPlay.textContent = "❚❚ pause";
+    state.timer = setInterval(function () {
+      var s2 = currentScenario();
+      if (state.step >= s2.audit.length - 1) { stopPlaying(); return; }
+      setStep(state.step + 1);
+    }, 900);
+  }
+
+  btnPrev.addEventListener("click", function () { setStep(state.step - 1); });
+  btnNext.addEventListener("click", function () { setStep(state.step + 1); });
+  btnPlay.addEventListener("click", togglePlay);
+  scrubber.addEventListener("input", function () { stopPlaying(); setStep(parseInt(scrubber.value, 10)); });
+
+  if (scenarios.length) {
+    renderRail();
+    renderScenario();
+  } else {
+    scenarioHead.innerHTML = "<em>No trace data yet — run <code>make visualize</code>.</em>";
+  }
+})();
+</script>
+
+</body>
+</html>
